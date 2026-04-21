@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="55%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </linearGradient>
+    <linearGradient id="m-stroke" x1="250" y1="260" x2="770" y2="770" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cffafe"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.2" cy="0.2" r="0.8">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 圆角矩形背景（比 squircle 更 clean） -->
+  <rect x="0" y="0" width="1024" height="1024" rx="228" ry="228" fill="url(#bg)"/>
+
+  <!-- 左上角柔和高光 -->
+  <rect x="0" y="0" width="1024" height="1024" rx="228" ry="228" fill="url(#glow)"/>
+
+  <!-- 'M' 主体：一条连续路径 —— 避免三笔衔接破绽 -->
+  <path d="M 260 720
+           L 260 304
+           Q 260 282, 282 282
+           L 326 282
+           Q 346 282, 358 298
+           L 512 512
+           L 666 298
+           Q 678 282, 698 282
+           L 742 282
+           Q 764 282, 764 304
+           L 764 720"
+        stroke="url(#m-stroke)"
+        stroke-width="92"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"/>
+
+  <!-- 右上 sparkle：只保留一个清晰的十字星 -->
+  <g transform="translate(820, 236)">
+    <path d="M 0 -44 L 0 44 M -44 0 L 44 0"
+          stroke="#ffffff"
+          stroke-width="14"
+          stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="10" fill="#ffffff"/>
+  </g>
+</svg>

@@ -1,17 +1,16 @@
-# Tauri / Rust
-src-tauri/target/
-src-tauri/gen/
-
-# Node
-node_modules/
-dist/
-.vite/
 
 # Editor
-.DS_Store
-.idea/
-.vscode/
-
 # Logs
+# Node
+# Tauri / Rust
 *.log
+.DS_Store
 .claude/worktrees/
+.idea/
+.vite/
+.vscode/
+dist/
+landing/downloads/
+node_modules/
+src-tauri/gen/
+src-tauri/target/

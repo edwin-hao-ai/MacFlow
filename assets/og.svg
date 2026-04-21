@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0c1216"/>
+      <stop offset="100%" stop-color="#06181e"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.15" cy="0.3" r="0.5">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.85" cy="0.8" r="0.5">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cffafe"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </linearGradient>
+    <linearGradient id="logobg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- 网格 -->
+  <g opacity="0.08" stroke="#22d3ee" stroke-width="1">
+    <line x1="0" y1="100" x2="1200" y2="100"/>
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="0" y1="400" x2="1200" y2="400"/>
+    <line x1="0" y1="500" x2="1200" y2="500"/>
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+  </g>
+
+  <!-- Logo 左侧 -->
+  <g transform="translate(80, 195)">
+    <rect x="0" y="0" width="240" height="240" rx="54" fill="url(#logobg)"/>
+    <g stroke="white" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M 62 172
+               L 62 74
+               Q 62 68, 68 68
+               L 78 68
+               Q 84 68, 87 72
+               L 120 122
+               L 153 72
+               Q 156 68, 162 68
+               L 172 68
+               Q 178 68, 178 74
+               L 178 172"/>
+    </g>
+  </g>
+
+  <!-- Title / Tagline 右侧 -->
+  <g transform="translate(370, 190)">
+    <text x="0" y="0" font-family="-apple-system, SF Pro Display, system-ui, sans-serif" font-size="88" font-weight="700" fill="url(#title)">
+      MacFlow
+    </text>
+    <text x="0" y="80" font-family="-apple-system, SF Pro Text, system-ui, sans-serif" font-size="40" font-weight="500" fill="#e4e4e7">
+      Mac 一键优化
+    </text>
+    <text x="0" y="145" font-family="-apple-system, SF Pro Text, system-ui, sans-serif" font-size="28" fill="#a1a1aa">
+      清理冗余进程和开发缓存
+    </text>
+
+    <!-- Stats row -->
+    <g transform="translate(0, 200)">
+      <g transform="translate(0, 0)">
+        <text font-family="-apple-system, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#title)">5.4 MB</text>
+        <text y="36" font-family="-apple-system, system-ui, sans-serif" font-size="18" fill="#71717a">DMG 体积</text>
+      </g>
+      <g transform="translate(240, 0)">
+        <text font-family="-apple-system, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#title)">100x</text>
+        <text y="36" font-family="-apple-system, system-ui, sans-serif" font-size="18" fill="#71717a">小于 CleanMyMac</text>
+      </g>
+      <g transform="translate(510, 0)">
+        <text font-family="-apple-system, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#title)">0</text>
+        <text y="36" font-family="-apple-system, system-ui, sans-serif" font-size="18" fill="#71717a">数据上传</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom bar -->
+  <g transform="translate(80, 560)">
+    <text font-family="-apple-system, system-ui, sans-serif" font-size="20" fill="#a1a1aa">
+      macflow.app  ·  Tauri v2 + SolidJS + Rust  ·  规则驱动 · 零数据上传
+    </text>
+  </g>
+</svg>

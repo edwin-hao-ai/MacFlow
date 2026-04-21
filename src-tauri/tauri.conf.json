@@ -42,6 +42,7 @@
     "longDescription": "MacFlow 帮助你清理冗余进程、开发缓存，让 Mac 保持轻快。",
     "macOS": {
       "minimumSystemVersion": "13.0",
+      "entitlements": "entitlements.plist",
       "dmg": {
         "background": null
       }
