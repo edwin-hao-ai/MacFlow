@@ -39,10 +39,14 @@ const ScanView: Component = () => {
   const optimize = async () => {
     const pids = Array.from(selected());
     if (pids.length === 0) return;
+    const procs = result()?.processes ?? [];
+    const names = pids.map(
+      (pid) => procs.find((p) => p.pid === pid)?.name ?? String(pid),
+    );
     setOptimizing(true);
     setMessage(null);
     try {
-      const r = await killProcesses(pids);
+      const r = await killProcesses(pids, names);
       setMessage(
         `已终止 ${r.killed.length} 个进程` +
           (r.failed.length > 0 ? `，${r.failed.length} 个失败` : ""),

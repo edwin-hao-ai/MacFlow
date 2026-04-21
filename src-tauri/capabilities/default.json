@@ -9,6 +9,8 @@
     "core:app:default",
     "core:event:default",
     "core:path:default",
+    "core:tray:default",
+    "core:menu:default",
     "os:default",
     "shell:default"
   ]

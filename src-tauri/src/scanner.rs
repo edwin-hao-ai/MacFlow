@@ -28,6 +28,7 @@ pub struct ProcessInfo {
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[allow(dead_code)] // System 枚举值保留供未来「显示系统进程」设置开关使用
 pub enum ProcessKind {
     Residual,
     Duplicate,

@@ -3,10 +3,11 @@ import {
   Activity,
   Cpu,
   HardDrive,
+  History as HistoryIcon,
   Settings as SettingsIcon,
 } from "lucide-solid";
 
-export type ViewId = "scan" | "process" | "cache" | "settings";
+export type ViewId = "scan" | "process" | "cache" | "history" | "settings";
 
 type Props = {
   current: ViewId;
@@ -17,6 +18,7 @@ const items: { id: ViewId; label: string; icon: Component<{ size?: number }> }[]
   { id: "scan", label: "智能扫描", icon: Activity },
   { id: "process", label: "进程管理", icon: Cpu },
   { id: "cache", label: "缓存清理", icon: HardDrive },
+  { id: "history", label: "历史记录", icon: HistoryIcon },
   { id: "settings", label: "设置", icon: SettingsIcon },
 ];
 
