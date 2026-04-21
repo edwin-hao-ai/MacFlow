@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "bundle:arm": "tauri build --target aarch64-apple-darwin",
+    "bundle:intel": "tauri build --target x86_64-apple-darwin",
+    "bundle:universal": "tauri build --target universal-apple-darwin"
   },
   "dependencies": {
     "solid-js": "^1.9.3",
@@ -16,7 +19,9 @@
     "motion": "^11.15.0",
     "@tauri-apps/api": "^2.1.1",
     "@tauri-apps/plugin-os": "^2.2.0",
-    "@tauri-apps/plugin-shell": "^2.2.0"
+    "@tauri-apps/plugin-shell": "^2.2.0",
+    "@tauri-apps/plugin-notification": "^2.2.0",
+    "@tauri-apps/plugin-autostart": "^2.2.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.1.0",

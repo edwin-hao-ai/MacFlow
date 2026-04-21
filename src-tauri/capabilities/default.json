@@ -12,6 +12,8 @@
     "core:tray:default",
     "core:menu:default",
     "os:default",
-    "shell:default"
+    "shell:default",
+    "notification:default",
+    "autostart:default"
   ]
 }

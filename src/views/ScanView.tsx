@@ -1,8 +1,15 @@
-import { Component, createSignal, onMount, Show } from "solid-js";
+import { Component, createSignal, onCleanup, onMount, Show } from "solid-js";
 import HealthCard from "@/components/HealthCard";
 import ProcessList from "@/components/ProcessList";
-import { scanAll, killProcesses, type ScanResult } from "@/lib/tauri";
+import {
+  scanAll,
+  killProcesses,
+  addWhitelist,
+  type ScanResult,
+  type SystemHealth,
+} from "@/lib/tauri";
 import { Sparkles, RefreshCw, Loader2 } from "lucide-solid";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 const ScanView: Component = () => {
   const [result, setResult] = createSignal<ScanResult | null>(null);
@@ -28,7 +35,17 @@ const ScanView: Component = () => {
     }
   };
 
-  onMount(runScan);
+  // 订阅后台监控的健康更新：不需要完整重扫就能看到 CPU/内存/磁盘变化
+  let unlisten: UnlistenFn | undefined;
+  onMount(async () => {
+    await runScan();
+    unlisten = await listen<SystemHealth>("health:update", (e) => {
+      const r = result();
+      if (!r) return;
+      setResult({ ...r, health: e.payload });
+    });
+  });
+  onCleanup(() => unlisten?.());
 
   const toggle = (pid: number) => {
     const next = new Set(selected());
@@ -67,6 +84,11 @@ const ScanView: Component = () => {
         processes={result()?.processes ?? []}
         selected={selected()}
         onToggle={toggle}
+        onWhitelist={async (name) => {
+          await addWhitelist("process", name, "从扫描列表添加");
+          setMessage(`${name} 已加入白名单，下次扫描不会再显示`);
+          await runScan();
+        }}
       />
 
       <div class="flex items-center gap-3">

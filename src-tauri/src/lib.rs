@@ -1,5 +1,6 @@
 pub mod cache_cleaner;
 pub mod cache_scanner;
+pub mod monitor;
 pub mod process_ops;
 pub mod scanner;
 pub mod storage;
@@ -39,7 +40,13 @@ async fn get_system_health(state: State<'_, AppState>) -> Result<SystemHealth, S
 #[tauri::command]
 async fn scan_all(state: State<'_, AppState>) -> Result<ScanResult, String> {
     let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
-    Ok(scanner::scan(&mut sys))
+    let mut result = scanner::scan(&mut sys);
+    // 叠加用户自定义白名单
+    let storage = state.storage.clone();
+    result
+        .processes
+        .retain(|p| !storage.is_whitelisted("process", &p.name));
+    Ok(result)
 }
 
 #[derive(Serialize)]
@@ -145,6 +152,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .setup({
             let storage = storage.clone();
             move |app| {
@@ -173,6 +185,9 @@ pub fn run() {
 
                 // 系统托盘
                 tray::init_tray(app.handle())?;
+
+                // 后台健康监控（2 秒一次）
+                monitor::start_background_monitor(app.handle().clone());
 
                 Ok(())
             }

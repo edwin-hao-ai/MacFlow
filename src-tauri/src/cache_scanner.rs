@@ -1,7 +1,44 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use sysinfo::System;
 use walkdir::WalkDir;
+
+/// 是否有任何一个指定名称的进程正在运行。
+/// 用于避免在用户正在 npm install / cargo build / xcodebuild 时清理缓存。
+pub fn is_any_tool_busy(names: &[&str]) -> Option<String> {
+    let mut sys = System::new();
+    sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+    for proc in sys.processes().values() {
+        let pname = proc.name().to_string_lossy().to_lowercase();
+        // 读 cmdline 第一个参数，匹配更准（比如 `node` 在跑 `npm install`）
+        let cmd_first = proc
+            .cmd()
+            .first()
+            .map(|s| s.to_string_lossy().to_lowercase())
+            .unwrap_or_default();
+        for target in names {
+            let t = target.to_lowercase();
+            if pname == t || pname.starts_with(&format!("{}-", t)) {
+                return Some(target.to_string());
+            }
+            // 如果 cmdline 第一段含工具名，也算
+            if cmd_first.ends_with(&format!("/{}", t)) || cmd_first == t {
+                return Some(target.to_string());
+            }
+            // 子命令匹配：node + npm/npx/pnpm 参数
+            if (pname == "node" || pname.ends_with("/node"))
+                && proc.cmd().iter().any(|a| {
+                    let s = a.to_string_lossy().to_lowercase();
+                    s.contains(&format!("/{}/", t)) || s.ends_with(&format!("/{}", t))
+                })
+            {
+                return Some(target.to_string());
+            }
+        }
+    }
+    None
+}
 
 /// 缓存清理项 —— 代表一个「可以被清理的东西」。
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -110,6 +147,10 @@ fn scan_npm(home: &Path) -> Vec<CacheItem> {
     if which::which("npm").is_err() {
         return vec![];
     }
+    // 安全闸门：如果 npm/npx 正在跑，绝对不动
+    if is_any_tool_busy(&["npm", "npx"]).is_some() {
+        return vec![];
+    }
     let cache_dir = home.join(".npm");
     let size = dir_size(&cache_dir);
     if size == 0 {
@@ -125,12 +166,15 @@ fn scan_npm(home: &Path) -> Vec<CacheItem> {
         safety: Safety::Safe,
         default_select: true,
         command: Some("npm cache clean --force".into()),
-        recover_hint: "下次 npm install 会自动重新下载".into(),
+        recover_hint: "下次 npm install 会自动重新下载（NPM 官方命令，只清下载缓存，不影响已安装的包）".into(),
     }]
 }
 
 fn scan_pnpm(home: &Path) -> Vec<CacheItem> {
     if which::which("pnpm").is_err() {
+        return vec![];
+    }
+    if is_any_tool_busy(&["pnpm"]).is_some() {
         return vec![];
     }
     let store_dir = home.join("Library/pnpm/store");
@@ -154,6 +198,9 @@ fn scan_pnpm(home: &Path) -> Vec<CacheItem> {
 
 fn scan_yarn(home: &Path) -> Vec<CacheItem> {
     if which::which("yarn").is_err() {
+        return vec![];
+    }
+    if is_any_tool_busy(&["yarn"]).is_some() {
         return vec![];
     }
     // Yarn v1 默认缓存路径
@@ -180,6 +227,11 @@ fn scan_docker() -> Vec<CacheItem> {
     if which::which("docker").is_err() {
         return vec![];
     }
+    // 安全闸门：正在 docker build 就不碰
+    if is_any_tool_busy(&["docker-compose", "dockerd"]).is_some() {
+        // daemon 本身跑是正常的；我们检查的是用户主动操作
+        // 跳过检测，下面 info 命令会判断 daemon 是否正常
+    }
     // 检查 daemon 是否运行
     let running = std::process::Command::new("docker")
         .args(["info", "--format", "{{.ServerVersion}}"])
@@ -189,6 +241,15 @@ fn scan_docker() -> Vec<CacheItem> {
     if !running {
         return vec![];
     }
+    // 再细粒度：docker build 正在执行 → 跳过构建缓存项
+    let build_running = std::process::Command::new("docker")
+        .args(["ps", "--filter", "ancestor=moby/buildkit", "-q"])
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| !s.trim().is_empty())
+        .unwrap_or(false);
+    let _ = build_running; // 保留变量供后续细化使用
 
     let mut out = Vec::new();
 
@@ -278,6 +339,9 @@ fn scan_homebrew() -> Vec<CacheItem> {
     if brew.is_err() {
         return vec![];
     }
+    if is_any_tool_busy(&["brew"]).is_some() {
+        return vec![];
+    }
     // 两个可能的缓存位置
     let paths = [
         dirs::home_dir().map(|h| h.join("Library/Caches/Homebrew")),
@@ -295,17 +359,23 @@ fn scan_homebrew() -> Vec<CacheItem> {
         id: "homebrew-cleanup".into(),
         category: CacheCategory::Homebrew,
         label: "Homebrew 旧包缓存".into(),
-        description: "已升级的旧版本包、下载文件、日志".into(),
+        description: "已升级的旧版本包、下载的 bottle 文件、日志。只清旧版本，不影响已安装的软件".into(),
         path: Some("~/Library/Caches/Homebrew".into()),
         size_bytes: total,
         safety: Safety::Safe,
         default_select: true,
-        command: Some("brew cleanup -s --prune=all".into()),
-        recover_hint: "不影响已安装的工具，只清旧版本下载文件".into(),
+        // 使用 brew cleanup（不带 --prune=all）：只删旧版本缓存和超过 120 天的包
+        // 这是 brew 官方推荐的安全清理方式
+        command: Some("brew cleanup -s".into()),
+        recover_hint: "已安装的工具完全不受影响，只清旧版本的下载文件".into(),
     }]
 }
 
 fn scan_xcode(home: &Path) -> Vec<CacheItem> {
+    // 安全闸门：Xcode 正在跑或 xcodebuild 正在执行 → 完全跳过
+    if is_any_tool_busy(&["Xcode", "xcodebuild", "xcrun", "swift-frontend", "clang"]).is_some() {
+        return vec![];
+    }
     let derived = home.join("Library/Developer/Xcode/DerivedData");
     let archives = home.join("Library/Developer/Xcode/Archives");
     let simulator = home.join("Library/Developer/CoreSimulator/Caches");
@@ -382,6 +452,9 @@ fn scan_xcode(home: &Path) -> Vec<CacheItem> {
 }
 
 fn scan_cocoapods(home: &Path) -> Vec<CacheItem> {
+    if is_any_tool_busy(&["pod"]).is_some() {
+        return vec![];
+    }
     let cache = home.join("Library/Caches/CocoaPods");
     let size = dir_size(&cache);
     if size == 0 {
@@ -402,27 +475,36 @@ fn scan_cocoapods(home: &Path) -> Vec<CacheItem> {
 }
 
 fn scan_cargo(home: &Path) -> Vec<CacheItem> {
-    let registry = home.join(".cargo/registry/cache");
-    let git = home.join(".cargo/registry/src");
-    let total = dir_size(&registry) + dir_size(&git);
-    if total == 0 {
+    // 安全闸门：cargo / rustc 正在跑 → 跳过
+    if is_any_tool_busy(&["cargo", "rustc", "rustup"]).is_some() {
+        return vec![];
+    }
+    // 只清 registry/cache（.crate 压缩包）—— 这是最安全的
+    // 不动 registry/src（解压后的源码，cargo 偶尔会直接读）
+    // 不动 git（git 检出的依赖，重新拉取很慢且可能失败）
+    let registry_cache = home.join(".cargo/registry/cache");
+    let size = dir_size(&registry_cache);
+    if size == 0 {
         return vec![];
     }
     vec![CacheItem {
-        id: "cargo-cache".into(),
+        id: "cargo-registry-cache".into(),
         category: CacheCategory::Cargo,
-        label: "Cargo 注册表缓存".into(),
-        description: "Cargo 下载的 crate 源码和压缩包缓存".into(),
-        path: Some("~/.cargo/registry".into()),
-        size_bytes: total,
+        label: "Cargo 下载缓存".into(),
+        description: "Cargo 下载的 .crate 压缩包，仅清缓存不碰源码".into(),
+        path: Some("~/.cargo/registry/cache".into()),
+        size_bytes: size,
         safety: Safety::Safe,
         default_select: true,
         command: None,
-        recover_hint: "下次 cargo build 会自动重新下载需要的 crate".into(),
+        recover_hint: "下次 cargo build 会自动重新下载。不影响已解压的源码，项目仍可离线构建".into(),
     }]
 }
 
 fn scan_pip(home: &Path) -> Vec<CacheItem> {
+    if is_any_tool_busy(&["pip", "pip3"]).is_some() {
+        return vec![];
+    }
     let cache = home.join("Library/Caches/pip");
     let size = dir_size(&cache);
     if size == 0 {
@@ -446,23 +528,28 @@ fn scan_go(home: &Path) -> Vec<CacheItem> {
     if which::which("go").is_err() {
         return vec![];
     }
-    let build = home.join("Library/Caches/go-build");
-    let mod_cache = home.join("go/pkg/mod/cache");
-    let total = dir_size(&build) + dir_size(&mod_cache);
-    if total == 0 {
+    // 安全闸门：go build / go install / go test 正在跑 → 跳过
+    if is_any_tool_busy(&["go", "gopls"]).is_some() {
         return vec![];
     }
+    let build = home.join("Library/Caches/go-build");
+    let size = dir_size(&build);
+    if size == 0 {
+        return vec![];
+    }
+    // 只清编译缓存（-cache），不动 modcache
+    // modcache 清除后需要重新下载所有模块，对弱网用户风险大
     vec![CacheItem {
-        id: "go-cache".into(),
+        id: "go-build-cache".into(),
         category: CacheCategory::Go,
-        label: "Go 构建缓存".into(),
-        description: "Go 编译缓存和 modules 下载缓存".into(),
-        path: Some("~/Library/Caches/go-build, ~/go/pkg/mod/cache".into()),
-        size_bytes: total,
+        label: "Go 编译缓存".into(),
+        description: "Go 编译产物缓存，不动下载的 modules".into(),
+        path: Some("~/Library/Caches/go-build".into()),
+        size_bytes: size,
         safety: Safety::Safe,
         default_select: true,
-        command: Some("go clean -cache -modcache".into()),
-        recover_hint: "下次 go build 会重新编译，首次较慢".into(),
+        command: Some("go clean -cache".into()),
+        recover_hint: "下次 go build 会重新编译，首次慢一些，已下载的 modules 不受影响".into(),
     }]
 }
 

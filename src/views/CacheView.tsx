@@ -20,6 +20,27 @@ import {
   fmtDuration,
 } from "@/lib/format";
 import { CheckCircle2, Loader2, RefreshCw, Sparkles, XCircle } from "lucide-solid";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/plugin-notification";
+
+async function notifyCleanComplete(bytes: number, count: number) {
+  try {
+    let granted = await isPermissionGranted();
+    if (!granted) {
+      granted = (await requestPermission()) === "granted";
+    }
+    if (!granted) return;
+    sendNotification({
+      title: "MacFlow 清理完成",
+      body: `已释放 ${fmtBytes(bytes)}，共清理 ${count} 项`,
+    });
+  } catch {
+    // 通知失败不影响清理本身
+  }
+}
 
 const CacheView: Component = () => {
   const [result, setResult] = createSignal<CacheScanResult | null>(null);
@@ -69,6 +90,7 @@ const CacheView: Component = () => {
       const s = await cleanCache(items);
       setSummary(s);
       await runScan();
+      await notifyCleanComplete(s.total_freed_bytes, s.success_count);
     } catch (e) {
       console.error(e);
     } finally {

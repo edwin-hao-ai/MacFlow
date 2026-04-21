@@ -1,10 +1,12 @@
 import { Component, For, Show } from "solid-js";
 import type { ProcessInfo } from "@/lib/tauri";
+import { ShieldCheck } from "lucide-solid";
 
 type Props = {
   processes: ProcessInfo[];
   selected: Set<number>;
   onToggle: (pid: number) => void;
+  onWhitelist?: (name: string) => void;
 };
 
 const kindLabel: Record<string, string> = {
@@ -74,6 +76,16 @@ const ProcessList: Component<Props> = (props) => {
                   <div>{p.cpu_percent.toFixed(1)}% CPU</div>
                   <div>{Math.round(p.memory_mb)}MB</div>
                 </div>
+                <Show when={props.onWhitelist}>
+                  <button
+                    type="button"
+                    title="加入白名单（永不再扫描此进程）"
+                    onClick={() => props.onWhitelist?.(p.name)}
+                    class="p-1.5 rounded-lg text-zinc-400 hover:text-brand-600 hover:bg-brand-500/10 transition-colors"
+                  >
+                    <ShieldCheck size={14} />
+                  </button>
+                </Show>
               </li>
             )}
           </For>
