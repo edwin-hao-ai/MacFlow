@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "MacFlow",
+  "version": "0.1.0",
+  "identifier": "com.macflow.app",
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "MacFlow",
+        "width": 900,
+        "height": 600,
+        "minWidth": 800,
+        "minHeight": 540,
+        "resizable": true,
+        "fullscreen": false,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "transparent": true,
+        "decorations": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg"],
+    "icon": [
+      "icons/icon.icns"
+    ],
+    "category": "DeveloperTool",
+    "shortDescription": "一键式 Mac 系统运维工具",
+    "longDescription": "MacFlow 帮助你清理冗余进程、开发缓存，让 Mac 保持轻快。",
+    "macOS": {
+      "minimumSystemVersion": "13.0",
+      "dmg": {
+        "background": null
+      }
+    }
+  },
+  "plugins": {}
+}

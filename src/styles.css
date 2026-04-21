@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    system-ui, sans-serif;
+  --font-mono:
+    "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --color-brand-50: #ecfeff;
+  --color-brand-100: #cffafe;
+  --color-brand-200: #a5f3fc;
+  --color-brand-300: #67e8f9;
+  --color-brand-400: #22d3ee;
+  --color-brand-500: #06b6d4;
+  --color-brand-600: #0891b2;
+  --color-brand-700: #0e7490;
+  --color-brand-800: #155e75;
+  --color-brand-900: #164e63;
+
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+
+  --shadow-card:
+    0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -8px rgba(0, 0, 0, 0.08);
+  --shadow-card-dark:
+    0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+
+  --animate-fade-in: fade-in 300ms ease-out;
+  --animate-slide-up: slide-up 300ms ease-out;
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up {
+    0% {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4: content detection is automatic via @source, but we can be explicit if needed */
+@source "./**/*.{ts,tsx,html}";
+
+@layer base {
+  :root {
+    --bg-app: 250 250 252;
+    --bg-sidebar: 245 245 247;
+    --bg-card: 255 255 255;
+    --text-primary: 17 17 20;
+    --text-secondary: 99 99 110;
+    --border: 230 230 234;
+    --bg-app-alpha: 0.78;
+    --bg-sidebar-alpha: 0.55;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-app: 22 22 25;
+      --bg-sidebar: 28 28 32;
+      --bg-card: 32 32 36;
+      --text-primary: 240 240 245;
+      --text-secondary: 160 160 170;
+      --border: 48 48 54;
+      --bg-app-alpha: 0.72;
+      --bg-sidebar-alpha: 0.48;
+    }
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  body {
+    color: rgb(var(--text-primary));
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .drag-region {
+    -webkit-app-region: drag;
+  }
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl bg-white/80 backdrop-blur-xl border border-black/5
+           shadow-card;
+  }
+  @media (prefers-color-scheme: dark) {
+    .card {
+      @apply bg-zinc-800/60 border-white/5 shadow-card-dark;
+    }
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center
+           rounded-xl px-5 py-2.5 font-medium
+           bg-brand-500 text-white shadow-sm
+           transition-all duration-150
+           hover:bg-brand-400 active:bg-brand-600
+           active:scale-[0.98]
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center
+           rounded-lg px-3 py-2 font-medium text-sm
+           text-zinc-700
+           hover:bg-black/5
+           transition-colors duration-150
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+  @media (prefers-color-scheme: dark) {
+    .btn-ghost {
+      @apply text-zinc-200 hover:bg-white/5;
+    }
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-2.5 rounded-lg px-3 py-2
+           text-sm font-medium text-zinc-600
+           hover:bg-black/5
+           transition-colors duration-150
+           cursor-default select-none w-full text-left;
+  }
+  @media (prefers-color-scheme: dark) {
+    .sidebar-item {
+      @apply text-zinc-300 hover:bg-white/5;
+    }
+  }
+  .sidebar-item[data-active="true"] {
+    @apply bg-brand-500/10 text-brand-600;
+  }
+  @media (prefers-color-scheme: dark) {
+    .sidebar-item[data-active="true"] {
+      @apply text-brand-300;
+    }
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
