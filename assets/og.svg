@@ -43,18 +43,41 @@
   <!-- Logo 左侧 -->
   <g transform="translate(80, 195)">
     <rect x="0" y="0" width="240" height="240" rx="54" fill="url(#logobg)"/>
-    <g stroke="white" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <path d="M 62 172
-               L 62 74
-               Q 62 68, 68 68
-               L 78 68
-               Q 84 68, 87 72
-               L 120 122
-               L 153 72
-               Q 156 68, 162 68
-               L 172 68
-               Q 178 68, 178 74
-               L 178 172"/>
+    <!-- 主 sparkle 放大缩小版 -->
+    <g transform="translate(120, 120) scale(0.22)">
+      <path d="M 0 -378
+               C 8 -378, 16 -372, 18 -362
+               L 56 -174
+               C 66 -122, 110 -78, 162 -68
+               L 350 -30
+               C 360 -28, 366 -20, 366 -12
+               C 366 -4, 360 4, 350 6
+               L 162 44
+               C 110 54, 66 98, 56 150
+               L 18 338
+               C 16 348, 8 354, 0 354
+               C -8 354, -16 348, -18 338
+               L -56 150
+               C -66 98, -110 54, -162 44
+               L -350 6
+               C -360 4, -366 -4, -366 -12
+               C -366 -20, -360 -28, -350 -30
+               L -162 -68
+               C -110 -78, -66 -122, -56 -174
+               L -18 -362
+               C -16 -372, -8 -378, 0 -378 Z"
+            fill="#ffffff"/>
+    </g>
+    <!-- 右上小 sparkle -->
+    <g transform="translate(188, 68)" opacity="0.9">
+      <path d="M 0 -18
+               L 4 -4
+               L 18 0
+               L 4 4
+               L 0 18
+               L -4 4
+               L -18 0
+               L -4 -4 Z" fill="#cffafe"/>
     </g>
   </g>
 
@@ -73,7 +96,7 @@
     <!-- Stats row -->
     <g transform="translate(0, 200)">
       <g transform="translate(0, 0)">
-        <text font-family="-apple-system, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#title)">5.4 MB</text>
+        <text font-family="-apple-system, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#title)">6.5 MB</text>
         <text y="36" font-family="-apple-system, system-ui, sans-serif" font-size="18" fill="#71717a">DMG 体积</text>
       </g>
       <g transform="translate(240, 0)">

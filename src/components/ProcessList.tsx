@@ -10,11 +10,10 @@ type Props = {
 };
 
 const kindLabel: Record<string, string> = {
-  residual: "软件残留",
-  duplicate: "重复进程",
+  zombie: "僵尸进程",
   idle: "长期闲置",
-  hog: "高占用闲置",
-  dev: "开发残留",
+  hog: "资源大户",
+  dev: "开发工具",
   system: "系统进程",
   foreground: "前台活跃",
 };

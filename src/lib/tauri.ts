@@ -10,7 +10,7 @@ export type SystemHealth = {
   disk_percent: number;
 };
 
-export type ProcessKind = "residual" | "duplicate" | "idle" | "hog" | "dev" | "system" | "foreground";
+export type ProcessKind = "zombie" | "idle" | "hog" | "dev" | "system" | "foreground";
 
 export type ProcessInfo = {
   pid: number;

@@ -3,6 +3,7 @@ pub mod cache_scanner;
 pub mod monitor;
 pub mod ports;
 pub mod process_ops;
+pub mod process_safety;
 pub mod scanner;
 pub mod storage;
 pub mod tray;

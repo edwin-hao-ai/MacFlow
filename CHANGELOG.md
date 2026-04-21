@@ -55,7 +55,7 @@
 - 当前状态：DMG 已签名（Developer ID 可识别），公证待 Apple timestamp 服务恢复后执行
 
 ### 实测数字
-- DMG 体积：**5.4 MB**
+- DMG 体积：**6.5 MB**
 - .app bundle：13 MB
 - 单二进制：6.6 MB
 - 前端 bundle：97 KB（gzip 28 KB）
