@@ -61,12 +61,18 @@ const ProcessList: Component<Props> = (props) => {
                   class="w-4 h-4 rounded accent-brand-500"
                 />
                 <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 flex-wrap">
                     <span class="truncate font-medium text-sm">{p.name}</span>
                     {riskBadge(p.risk)}
                     <span class="text-[10px] text-zinc-400">
                       {kindLabel[p.kind] ?? p.kind}
                     </span>
+                    <Show when={p.ports.length > 0}>
+                      <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-medium bg-brand-500/10 text-brand-700 dark:text-brand-300">
+                        :{p.ports.slice(0, 3).join(",")}
+                        {p.ports.length > 3 && `+${p.ports.length - 3}`}
+                      </span>
+                    </Show>
                   </div>
                   <div class="text-[11px] text-zinc-500 font-mono truncate">
                     PID {p.pid} · {p.reason}

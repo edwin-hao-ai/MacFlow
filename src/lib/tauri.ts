@@ -22,6 +22,7 @@ export type ProcessInfo = {
   risk: "safe" | "low" | "dev" | "hidden";
   default_select: boolean;
   reason: string;
+  ports: number[];
 };
 
 export type ScanResult = {

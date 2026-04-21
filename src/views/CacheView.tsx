@@ -26,7 +26,19 @@ import {
   sendNotification,
 } from "@tauri-apps/plugin-notification";
 
+function isNotifyEnabled(): boolean {
+  try {
+    const raw = localStorage.getItem("macflow.prefs.v1");
+    if (!raw) return true; // 默认开
+    const p = JSON.parse(raw);
+    return p?.notifyOnCleanComplete !== false;
+  } catch {
+    return true;
+  }
+}
+
 async function notifyCleanComplete(bytes: number, count: number) {
+  if (!isNotifyEnabled()) return;
   try {
     let granted = await isPermissionGranted();
     if (!granted) {

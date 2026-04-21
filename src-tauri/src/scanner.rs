@@ -24,6 +24,7 @@ pub struct ProcessInfo {
     pub risk: Risk,
     pub default_select: bool,
     pub reason: String,
+    pub ports: Vec<u16>,
 }
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq)]
@@ -173,6 +174,7 @@ fn classify_processes(sys: &System) -> Vec<ProcessInfo> {
             risk,
             default_select,
             reason,
+            ports: Vec::new(),
         });
     }
 
@@ -180,7 +182,38 @@ fn classify_processes(sys: &System) -> Vec<ProcessInfo> {
     out.sort_by(|a, b| b.memory_mb.partial_cmp(&a.memory_mb).unwrap_or(std::cmp::Ordering::Equal));
     // 最多展示 40 项，避免信息过载
     out.truncate(40);
+
+    // 批量查询端口占用，附加给对应 PID
+    let pids: Vec<u32> = out.iter().map(|p| p.pid).collect();
+    let port_map = crate::ports::ports_by_pid(&pids);
+    for p in out.iter_mut() {
+        if let Some(ports) = port_map.get(&p.pid) {
+            p.ports = ports.clone();
+            // 有监听端口的进程大概率是开发服务 —— 降低默认选中概率
+            if !p.ports.is_empty() && p.risk == Risk::Safe {
+                p.default_select = false;
+                p.reason = format!("{}（监听 {} 端口，疑似运行中的服务）", p.reason, ports_preview(ports));
+            } else if !p.ports.is_empty() {
+                p.reason = format!("{} · 端口 {}", p.reason, ports_preview(ports));
+            }
+        }
+    }
+
     out
+}
+
+fn ports_preview(ports: &[u16]) -> String {
+    if ports.len() <= 3 {
+        ports.iter().map(|p| p.to_string()).collect::<Vec<_>>().join("/")
+    } else {
+        format!(
+            "{}/{}/{} 等 {} 个",
+            ports[0],
+            ports[1],
+            ports[2],
+            ports.len()
+        )
+    }
 }
 
 fn classify_one(

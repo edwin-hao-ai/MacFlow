@@ -1,6 +1,7 @@
 import { Component, createSignal, onCleanup, onMount, Show } from "solid-js";
 import HealthCard from "@/components/HealthCard";
 import ProcessList from "@/components/ProcessList";
+import Welcome from "@/components/Welcome";
 import {
   scanAll,
   killProcesses,
@@ -11,12 +12,17 @@ import {
 import { Sparkles, RefreshCw, Loader2 } from "lucide-solid";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
+const WELCOME_SEEN_KEY = "macflow.welcome.seen";
+
 const ScanView: Component = () => {
   const [result, setResult] = createSignal<ScanResult | null>(null);
   const [scanning, setScanning] = createSignal(false);
   const [selected, setSelected] = createSignal(new Set<number>());
   const [optimizing, setOptimizing] = createSignal(false);
   const [message, setMessage] = createSignal<string | null>(null);
+  const [showWelcome, setShowWelcome] = createSignal(
+    localStorage.getItem(WELCOME_SEEN_KEY) !== "true",
+  );
 
   const runScan = async () => {
     setScanning(true);
@@ -38,7 +44,9 @@ const ScanView: Component = () => {
   // 订阅后台监控的健康更新：不需要完整重扫就能看到 CPU/内存/磁盘变化
   let unlisten: UnlistenFn | undefined;
   onMount(async () => {
-    await runScan();
+    if (!showWelcome()) {
+      await runScan();
+    }
     unlisten = await listen<SystemHealth>("health:update", (e) => {
       const r = result();
       if (!r) return;
@@ -46,6 +54,12 @@ const ScanView: Component = () => {
     });
   });
   onCleanup(() => unlisten?.());
+
+  const handleStart = async () => {
+    localStorage.setItem(WELCOME_SEEN_KEY, "true");
+    setShowWelcome(false);
+    await runScan();
+  };
 
   const toggle = (pid: number) => {
     const next = new Set(selected());
@@ -75,6 +89,10 @@ const ScanView: Component = () => {
       setOptimizing(false);
     }
   };
+
+  if (showWelcome()) {
+    return <Welcome onStart={handleStart} />;
+  }
 
   return (
     <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
