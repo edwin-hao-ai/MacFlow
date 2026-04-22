@@ -39,10 +39,23 @@ export async function scanAll(): Promise<ScanResult> {
   return invoke("scan_all");
 }
 
+export type KillResult = {
+  pid: number;
+  name: string;
+  success: boolean;
+  message: string;
+};
+
+export type KillReport = {
+  killed: number[];
+  failed: number[];
+  details: KillResult[];
+};
+
 export async function killProcesses(
   pids: number[],
   names: string[],
-): Promise<{ killed: number[]; failed: number[] }> {
+): Promise<KillReport> {
   return invoke("kill_processes", { pids, names });
 }
 

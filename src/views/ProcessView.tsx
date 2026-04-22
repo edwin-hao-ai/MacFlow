@@ -11,6 +11,7 @@ import {
   addWhitelist,
   killProcesses,
   listAllProcesses,
+  type KillResult,
   type ProcessRow,
 } from "@/lib/tauri";
 import {
@@ -46,6 +47,7 @@ const ProcessView: Component = () => {
   const [selected, setSelected] = createSignal(new Set<number>());
   const [busy, setBusy] = createSignal(false);
   const [message, setMessage] = createSignal<string | null>(null);
+  const [killDetails, setKillDetails] = createSignal<KillResult[] | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -137,11 +139,14 @@ const ProcessView: Component = () => {
     );
     setBusy(true);
     setMessage(null);
+    setKillDetails(null);
     try {
       const r = await killProcesses(pids, names);
       let msg = t("scan.killSuccess", { count: r.killed.length });
       if (r.failed.length > 0) {
         msg += t("scan.killPartial", { failed: r.failed.length });
+        // 只展示失败的细节
+        setKillDetails(r.details.filter((d) => !d.success));
       }
       setMessage(msg);
       setSelected(new Set<number>());
@@ -399,6 +404,27 @@ const ProcessView: Component = () => {
         </Show>
       </div>
 
+      {/* 失败详情展开 */}
+      <Show when={killDetails() && killDetails()!.length > 0}>
+        <div class="mx-6 mb-3 p-3 rounded-lg bg-warning-500/10 border border-warning-500/20 animate-slide-up">
+          <div class="text-xs font-semibold text-warning-700 dark:text-warning-400 mb-1.5">
+            以下进程未能终止：
+          </div>
+          <ul class="text-[11px] space-y-1 text-zinc-600 dark:text-zinc-300">
+            <For each={killDetails()}>
+              {(d) => (
+                <li class="flex gap-2">
+                  <span class="font-medium min-w-[120px]">
+                    {d.name} <span class="text-zinc-400">(PID {d.pid})</span>
+                  </span>
+                  <span class="text-zinc-500">{d.message}</span>
+                </li>
+              )}
+            </For>
+          </ul>
+        </div>
+      </Show>
+
       {/* 底部操作条 */}
       <div class="px-6 py-3 border-t border-black/5 dark:border-white/5 flex items-center gap-3">
         <button
@@ -417,7 +443,7 @@ const ProcessView: Component = () => {
         <span class="text-xs text-zinc-500">
           共 {selectableCount()} 项可终止 · 受保护进程已禁用选择
         </span>
-        <Show when={message()}>
+        <Show when={message() && !killDetails()}>
           <span class="ml-auto text-xs text-zinc-500">{message()}</span>
         </Show>
       </div>

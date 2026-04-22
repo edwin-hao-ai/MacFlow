@@ -519,7 +519,10 @@ fn scan_pip(home: &Path) -> Vec<CacheItem> {
         size_bytes: size,
         safety: Safety::Safe,
         default_select: true,
-        command: Some("pip cache purge".into()),
+        // 用特殊前缀 __PIP_CLEAN__ 让 cleaner 自己处理
+        // 因为 `pip` 脚本的 shebang 经常是坏的（用户换了 Python 版本），
+        // 我们要尝试多种方式
+        command: Some("__PIP_CLEAN__".into()),
         recover_hint: "下次 pip install 会自动重新下载".into(),
     }]
 }

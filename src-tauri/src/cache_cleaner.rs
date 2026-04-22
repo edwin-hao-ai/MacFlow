@@ -130,6 +130,9 @@ pub async fn clean(items: Vec<CacheItem>) -> CleanSummary {
                 "检测到 {} 正在运行，已跳过清理以防止损坏",
                 busy
             ))
+        } else if item.command.as_deref() == Some("__PIP_CLEAN__") {
+            // Pip 缓存清理特殊处理：绕开坏 shebang 的 pip 脚本
+            clean_pip_cache(&item).await
         } else if let Some(cmd) = &item.command {
             run_shell_command(cmd).await
         } else if let Some(path) = &item.path {
@@ -212,6 +215,57 @@ async fn run_shell_command(cmd: &str) -> Result<(), String> {
         return Err(msg);
     }
     Ok(())
+}
+
+/// Pip 缓存清理 —— 绕开用户坏掉的 pip shebang。
+///
+/// 常见问题：用户装的 `/Users/xxx/Library/Python/3.9/bin/pip` 脚本第一行是
+/// `#!/Applications/Xcode.app/Contents/Developer/usr/bin/python3`
+/// 但 Xcode 卸载 / 升级后这条路径消失，pip 直接无法启动。
+///
+/// 解法：优先用 `python3 -m pip cache purge` —— 只要有任何一个可用的 python3
+/// 就能执行。多级回退：
+///   1) python3 -m pip cache purge
+///   2) python -m pip cache purge
+///   3) pip3 cache purge
+///   4) pip cache purge
+///   5) 直接删除 ~/Library/Caches/pip 目录（保底）
+async fn clean_pip_cache(item: &CacheItem) -> Result<(), String> {
+    let attempts = [
+        "python3 -m pip cache purge",
+        "python -m pip cache purge",
+        "pip3 cache purge",
+        "pip cache purge",
+    ];
+    let mut last_err = String::new();
+    for cmd in attempts {
+        match run_shell_command(cmd).await {
+            Ok(()) => return Ok(()),
+            Err(e) => {
+                // 保留最后一个错误供诊断
+                last_err = format!("`{}` 失败: {}", cmd, e);
+            }
+        }
+    }
+
+    // 所有 python/pip 方式都失败 → 回退到直接删除目录（同 Xcode DerivedData 的做法）
+    if let Some(path) = &item.path {
+        let p = expand_tilde(path);
+        if is_cleanup_path_allowed(&p) {
+            if let Err(e) = remove_directory(&p).await {
+                return Err(format!(
+                    "{}；回退到直接删除也失败: {}",
+                    last_err, e
+                ));
+            }
+            return Ok(());
+        }
+    }
+
+    Err(format!(
+        "Pip 环境损坏（shebang 指向已卸载的 Python）：{}。\n请手动执行 `python3 -m pip cache purge`，或重新安装 pip。",
+        last_err
+    ))
 }
 
 /// 检测用户使用的 shell。优先级：$SHELL > /bin/zsh > /bin/bash > /bin/sh

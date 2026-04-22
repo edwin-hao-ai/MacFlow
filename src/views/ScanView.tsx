@@ -97,6 +97,12 @@ const ScanView: Component = () => {
       let msg = t("scan.killSuccess", { count: r.killed.length });
       if (r.failed.length > 0) {
         msg += t("scan.killPartial", { failed: r.failed.length });
+        // 把失败的原因拼进 message
+        const failReasons = r.details
+          .filter((d) => !d.success)
+          .map((d) => `${d.name}: ${d.message}`)
+          .join("；");
+        if (failReasons) msg += ` —— ${failReasons}`;
       }
       setMessage(msg);
       await runScan();

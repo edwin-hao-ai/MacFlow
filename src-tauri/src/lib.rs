@@ -60,9 +60,18 @@ async fn list_all_processes(state: State<'_, AppState>) -> Result<Vec<scanner::P
 }
 
 #[derive(Serialize)]
+pub struct KillResult {
+    pub pid: u32,
+    pub name: String,
+    pub success: bool,
+    pub message: String,
+}
+
+#[derive(Serialize)]
 pub struct KillReport {
     pub killed: Vec<u32>,
     pub failed: Vec<u32>,
+    pub details: Vec<KillResult>,
 }
 
 #[tauri::command]
@@ -73,29 +82,39 @@ async fn kill_processes(
 ) -> Result<KillReport, String> {
     let mut killed = Vec::new();
     let mut failed = Vec::new();
+    let mut details = Vec::new();
+
     for (idx, pid) in pids.iter().enumerate() {
         let name = names.get(idx).cloned().unwrap_or_default();
-        if process_ops::graceful_kill(*pid) {
+        let outcome = process_ops::graceful_kill(*pid);
+        let msg = outcome.message();
+        let ok = outcome.is_ok();
+
+        if ok {
             killed.push(*pid);
-            let _ = state.storage.log_history(
-                "process_kill",
-                &format!("{} (PID {})", name, pid),
-                0,
-                true,
-                "优雅终止成功",
-            );
         } else {
             failed.push(*pid);
-            let _ = state.storage.log_history(
-                "process_kill",
-                &format!("{} (PID {})", name, pid),
-                0,
-                false,
-                "终止失败，可能是受保护进程",
-            );
         }
+        details.push(KillResult {
+            pid: *pid,
+            name: name.clone(),
+            success: ok,
+            message: msg.clone(),
+        });
+
+        let _ = state.storage.log_history(
+            "process_kill",
+            &format!("{} (PID {})", name, pid),
+            0,
+            ok,
+            &msg,
+        );
     }
-    Ok(KillReport { killed, failed })
+    Ok(KillReport {
+        killed,
+        failed,
+        details,
+    })
 }
 
 // ========== Cache ==========
