@@ -1,10 +1,10 @@
 # MacFlow
 
-> Mac 专属的一键式系统运维工具 · DMG 6.5 MB
+> Mac 专属的一键式系统运维工具 · DMG 8.0 MB
 
 MacFlow 清理冗余进程和开发者缓存（NPM / Docker / Xcode / Homebrew / Cargo / Go 等），让 Mac 保持轻快。
 
-- 🪶 **极致轻量**：DMG 6.5 MB，比 CleanMyMac 小 100 倍，比 Electron 应用小 20 倍
+- 🪶 **极致轻量**：DMG 8.0 MB，比 CleanMyMac 小 100 倍，比 Electron 应用小 20 倍
 - 🛡️ **三重安全防御**：工具占用检测 + 路径白名单 + 执行前二次校验
 - 🎯 **规则驱动**：不接 AI，所有分类用规则，可审计
 - 🔒 **零数据上传**：本地 SQLite 存储，离线运行

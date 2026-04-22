@@ -48,5 +48,15 @@
       }
     }
   },
-  "plugins": {}
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE1RUVDOTQ5MERFMkYyOTEKUldTUjh1SU5TY251cFJWQ09BaU1UNzNQQ2tJSksyUEkvMWF1NjJnTDRheWd3NTZEakpjT2NibzcK",
+      "endpoints": [
+        "https://macflow.app/updates/{{target}}-{{arch}}/{{current_version}}.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
 }

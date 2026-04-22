@@ -14,3 +14,4 @@ landing/downloads/
 node_modules/
 src-tauri/gen/
 src-tauri/target/
+landing/updates/

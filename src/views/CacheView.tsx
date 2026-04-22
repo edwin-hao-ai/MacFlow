@@ -25,11 +25,12 @@ import {
   requestPermission,
   sendNotification,
 } from "@tauri-apps/plugin-notification";
+import { useI18n, getT } from "@/i18n";
 
 function isNotifyEnabled(): boolean {
   try {
     const raw = localStorage.getItem("macflow.prefs.v1");
-    if (!raw) return true; // 默认开
+    if (!raw) return true;
     const p = JSON.parse(raw);
     return p?.notifyOnCleanComplete !== false;
   } catch {
@@ -39,6 +40,7 @@ function isNotifyEnabled(): boolean {
 
 async function notifyCleanComplete(bytes: number, count: number) {
   if (!isNotifyEnabled()) return;
+  const t = getT();
   try {
     let granted = await isPermissionGranted();
     if (!granted) {
@@ -46,15 +48,16 @@ async function notifyCleanComplete(bytes: number, count: number) {
     }
     if (!granted) return;
     sendNotification({
-      title: "MacFlow 清理完成",
-      body: `已释放 ${fmtBytes(bytes)}，共清理 ${count} 项`,
+      title: t("cache.notifyTitle"),
+      body: t("cache.notifyBody", { size: fmtBytes(bytes), count }),
     });
   } catch {
-    // 通知失败不影响清理本身
+    /* noop */
   }
 }
 
 const CacheView: Component = () => {
+  const { t } = useI18n();
   const [result, setResult] = createSignal<CacheScanResult | null>(null);
   const [scanning, setScanning] = createSignal(false);
   const [selected, setSelected] = createSignal(new Set<string>());
@@ -110,7 +113,6 @@ const CacheView: Component = () => {
     }
   };
 
-  // 按 category 分组
   const grouped = createMemo(() => {
     const items = result()?.items ?? [];
     const map = new Map<string, CacheItem[]>();
@@ -123,21 +125,18 @@ const CacheView: Component = () => {
 
   return (
     <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
-      {/* 顶部统计卡 */}
       <div class="card p-6 animate-fade-in">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-base font-semibold">开发者缓存</h2>
-            <p class="text-xs text-zinc-500 mt-0.5">
-              NPM / Docker / Xcode / Homebrew / Cargo 等
-            </p>
+            <h2 class="text-base font-semibold">{t("cache.title")}</h2>
+            <p class="text-xs text-zinc-500 mt-0.5">{t("cache.subtitle")}</p>
           </div>
           <Show
             when={!scanning()}
             fallback={
               <div class="flex items-center gap-2 text-xs text-zinc-500">
                 <Loader2 size={14} class="animate-spin" />
-                正在扫描缓存...
+                {t("cache.scanning")}
               </div>
             }
           >
@@ -145,7 +144,7 @@ const CacheView: Component = () => {
               <div class="text-3xl font-bold text-brand-600 tabular-nums">
                 {fmtBytes(result()?.total_bytes ?? 0)}
               </div>
-              <div class="text-xs text-zinc-500">可释放空间</div>
+              <div class="text-xs text-zinc-500">{t("cache.freeable")}</div>
             </div>
           </Show>
         </div>
@@ -160,11 +159,14 @@ const CacheView: Component = () => {
               </div>
               <div>
                 <div class="font-semibold">
-                  清理完成，释放 {fmtBytes(s().total_freed_bytes)}
+                  {t("cache.cleanSuccess", {
+                    size: fmtBytes(s().total_freed_bytes),
+                  })}
                 </div>
                 <div class="text-xs text-zinc-500">
-                  成功 {s().success_count} 项
-                  {s().fail_count > 0 && ` · 失败 ${s().fail_count} 项`}
+                  {t("cache.successItems", { count: s().success_count })}
+                  {s().fail_count > 0 &&
+                    ` · ${t("cache.failItems", { count: s().fail_count })}`}
                 </div>
               </div>
             </div>
@@ -172,13 +174,12 @@ const CacheView: Component = () => {
         )}
       </Show>
 
-      {/* 分组列表 */}
       <Show
         when={(result()?.items.length ?? 0) > 0}
         fallback={
           <Show when={!scanning()}>
             <div class="card p-12 text-center text-sm text-zinc-500">
-              没有发现可清理的缓存。你的 Mac 很干净！
+              {t("cache.noItems")}
             </div>
           </Show>
         }
@@ -193,8 +194,10 @@ const CacheView: Component = () => {
                   {CATEGORY_LABELS[category] ?? category}
                 </span>
                 <span class="text-xs text-zinc-500">
-                  {items.length} 项 ·{" "}
-                  {fmtBytes(items.reduce((s, i) => s + i.size_bytes, 0))}
+                  {t("cache.groupCount", {
+                    count: items.length,
+                    size: fmtBytes(items.reduce((s, i) => s + i.size_bytes, 0)),
+                  })}
                 </span>
               </div>
               <ul class="space-y-1">
@@ -212,17 +215,17 @@ const CacheView: Component = () => {
                           <span class="font-medium text-sm">{item.label}</span>
                           {item.safety === "safe" && (
                             <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-success-500/15 text-success-600">
-                              安全
+                              {t("risk.safe")}
                             </span>
                           )}
                           {item.safety === "low" && (
                             <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-warning-500/15 text-warning-600">
-                              低风险
+                              {t("risk.low")}
                             </span>
                           )}
                           {item.safety === "medium" && (
                             <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-danger-500/15 text-danger-600">
-                              注意
+                              {t("risk.notice")}
                             </span>
                           )}
                         </div>
@@ -252,7 +255,6 @@ const CacheView: Component = () => {
         </For>
       </Show>
 
-      {/* 底部操作条 */}
       <div class="flex items-center gap-3 pb-4">
         <button
           type="button"
@@ -271,7 +273,10 @@ const CacheView: Component = () => {
           >
             <Sparkles size={16} />
           </Show>
-          清理 {fmtBytes(selectedBytes())} ({selected().size})
+          {t("cache.cleanCta", {
+            size: fmtBytes(selectedBytes()),
+            count: selected().size,
+          })}
         </button>
 
         <button
@@ -286,20 +291,19 @@ const CacheView: Component = () => {
           >
             <RefreshCw size={16} />
           </Show>
-          重新扫描
+          {t("common.rescan")}
         </button>
 
         <span class="ml-auto text-[11px] text-zinc-400">
-          清理操作不可撤销，请确认后执行
+          {t("common.notice_irreversible")}
         </span>
       </div>
 
-      {/* 清理详情 */}
       <Show when={summary() && summary()!.fail_count > 0}>
         <div class="card p-4 border-danger-500/20">
           <div class="flex items-center gap-2 mb-2">
             <XCircle size={16} class="text-danger-500" />
-            <span class="font-medium text-sm">部分项目清理失败</span>
+            <span class="font-medium text-sm">{t("cache.partialFail")}</span>
           </div>
           <ul class="text-xs space-y-1">
             <For each={summary()!.reports.filter((r) => !r.success)}>

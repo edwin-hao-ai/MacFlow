@@ -5,8 +5,9 @@ import {
   removeWhitelist,
   type WhitelistEntry,
 } from "@/lib/tauri";
-import { fmtRelativeTime } from "@/lib/format";
-import { Plus, Trash2 } from "lucide-solid";
+import { checkForUpdate, downloadAndInstall, type UpdateStatus } from "@/lib/updater";
+import { fmtBytes, fmtRelativeTime } from "@/lib/format";
+import { Plus, Trash2, Check, Download, RefreshCw } from "lucide-solid";
 import {
   disable as autostartDisable,
   enable as autostartEnable,
@@ -16,6 +17,8 @@ import {
   isPermissionGranted,
   requestPermission,
 } from "@tauri-apps/plugin-notification";
+import { useI18n, type LocaleCode } from "@/i18n";
+import { getVersion } from "@tauri-apps/api/app";
 
 const PREFS_KEY = "macflow.prefs.v1";
 type Prefs = {
@@ -40,6 +43,7 @@ function savePrefs(p: Prefs) {
 }
 
 const SettingsView: Component = () => {
+  const { t, locale, setLocale } = useI18n();
   const [items, setItems] = createSignal<WhitelistEntry[]>([]);
   const [adding, setAdding] = createSignal(false);
   const [kind, setKind] = createSignal<"process" | "cache_path">("process");
@@ -49,6 +53,10 @@ const SettingsView: Component = () => {
   const [autostart, setAutostart] = createSignal(false);
   const [notifyGranted, setNotifyGranted] = createSignal(false);
   const [prefs, setPrefs] = createSignal<Prefs>(defaultPrefs);
+  const [currentVersion, setCurrentVersion] = createSignal("0.1.0");
+  const [updateStatus, setUpdateStatus] = createSignal<UpdateStatus>({
+    state: "idle",
+  });
 
   const load = async () => {
     setItems(await getWhitelist());
@@ -59,6 +67,11 @@ const SettingsView: Component = () => {
     }
     try {
       setNotifyGranted(await isPermissionGranted());
+    } catch {
+      /* noop */
+    }
+    try {
+      setCurrentVersion(await getVersion());
     } catch {
       /* noop */
     }
@@ -103,23 +116,43 @@ const SettingsView: Component = () => {
     await load();
   };
 
+  const runUpdateCheck = async () => {
+    setUpdateStatus({ state: "checking" });
+    const s = await checkForUpdate();
+    setUpdateStatus(s);
+  };
+
+  const runUpdateInstall = async () => {
+    const s = updateStatus();
+    if (s.state !== "available") return;
+    setUpdateStatus({ state: "downloading", downloaded: 0, total: null });
+    try {
+      await downloadAndInstall(s.update, (downloaded, total) => {
+        setUpdateStatus({ state: "downloading", downloaded, total });
+      });
+      setUpdateStatus({ state: "ready" });
+    } catch (e) {
+      setUpdateStatus({ state: "error", message: String(e) });
+    }
+  };
+
   return (
     <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
       <div class="card p-6">
-        <h2 class="text-base font-semibold">通用设置</h2>
-        <p class="text-xs text-zinc-500 mt-0.5">基础行为开关</p>
+        <h2 class="text-base font-semibold">{t("settings.general")}</h2>
+        <p class="text-xs text-zinc-500 mt-0.5">{t("settings.generalDesc")}</p>
       </div>
 
       <div class="card p-2">
         <ToggleRow
-          label="开机自动启动"
-          desc="macOS 登录时自动启动 MacFlow 并最小化到菜单栏"
+          label={t("settings.autostart")}
+          desc={t("settings.autostartDesc")}
           checked={autostart()}
           onChange={toggleAutostart}
         />
         <ToggleRow
-          label="清理完成通知"
-          desc="在 macOS 通知中心提示已释放空间"
+          label={t("settings.notifyClean")}
+          desc={t("settings.notifyCleanDesc")}
           checked={prefs().notifyOnCleanComplete && notifyGranted()}
           disabled={!notifyGranted() && prefs().notifyOnCleanComplete}
           onChange={async (v) => {
@@ -134,18 +167,141 @@ const SettingsView: Component = () => {
               class="text-xs text-brand-600 hover:underline"
               onClick={ensureNotifyPermission}
             >
-              通知权限未授权，点此请求
+              {t("settings.notifyRequestPrompt")}
             </button>
           </div>
         </Show>
+
+        {/* 语言 */}
+        <div class="px-3 py-3 rounded-lg">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="text-sm font-medium">{t("settings.language")}</div>
+              <div class="text-xs text-zinc-500 mt-0.5">
+                {t("settings.languageDesc")}
+              </div>
+            </div>
+            <div class="flex items-center gap-1 bg-black/5 dark:bg-white/5 rounded-lg p-1">
+              <For
+                each={
+                  [
+                    ["auto", t("settings.languageAuto")],
+                    ["zh-CN", t("settings.languageZh")],
+                    ["en", t("settings.languageEn")],
+                  ] as [LocaleCode, string][]
+                }
+              >
+                {([val, label]) => (
+                  <button
+                    type="button"
+                    onClick={() => setLocale(val)}
+                    class={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                      locale() === val
+                        ? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-zinc-100"
+                        : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )}
+              </For>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 更新检查 */}
+      <div class="card p-3">
+        <div class="flex items-start justify-between gap-4 px-2 pt-1">
+          <div class="flex-1">
+            <div class="text-sm font-medium">{t("settings.updates")}</div>
+            <div class="text-xs text-zinc-500 mt-0.5">
+              {t("settings.updatesDesc")}
+            </div>
+            <Show when={updateStatus().state === "uptodate"}>
+              <div class="mt-2 flex items-center gap-1.5 text-xs text-success-600">
+                <Check size={12} />
+                {t("settings.updatesLatest", { version: currentVersion() })}
+              </div>
+            </Show>
+            <Show when={updateStatus().state === "available"}>
+              <div class="mt-2 text-xs text-brand-600">
+                {t("settings.updatesAvailable", {
+                  version:
+                    (updateStatus() as Extract<
+                      UpdateStatus,
+                      { state: "available" }
+                    >).update.version,
+                })}
+              </div>
+            </Show>
+            <Show when={updateStatus().state === "downloading"}>
+              {(() => {
+                const s = updateStatus() as Extract<
+                  UpdateStatus,
+                  { state: "downloading" }
+                >;
+                return (
+                  <div class="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+                    {t("settings.updatesDownloading")}{" "}
+                    {fmtBytes(s.downloaded)}
+                    {s.total ? ` / ${fmtBytes(s.total)}` : ""}
+                  </div>
+                );
+              })()}
+            </Show>
+            <Show when={updateStatus().state === "error"}>
+              <div class="mt-2 text-xs text-danger-500">
+                {t("settings.updatesError", {
+                  error:
+                    (updateStatus() as Extract<UpdateStatus, { state: "error" }>)
+                      .message,
+                })}
+              </div>
+            </Show>
+          </div>
+          <div class="flex-shrink-0">
+            <Show
+              when={updateStatus().state === "available"}
+              fallback={
+                <button
+                  type="button"
+                  class="btn-ghost gap-1.5"
+                  disabled={updateStatus().state === "checking"}
+                  onClick={runUpdateCheck}
+                >
+                  <Show
+                    when={updateStatus().state !== "checking"}
+                    fallback={<RefreshCw size={12} class="animate-spin" />}
+                  >
+                    <RefreshCw size={12} />
+                  </Show>
+                  {updateStatus().state === "checking"
+                    ? t("settings.updatesChecking")
+                    : t("settings.updatesCheck")}
+                </button>
+              }
+            >
+              <button
+                type="button"
+                class="btn-primary gap-1.5"
+                disabled={updateStatus().state === "downloading"}
+                onClick={runUpdateInstall}
+              >
+                <Download size={12} />
+                {t("settings.updatesDownload")}
+              </button>
+            </Show>
+          </div>
+        </div>
       </div>
 
       <div class="card p-4">
         <div class="flex items-center justify-between mb-3 px-1">
           <div>
-            <div class="text-sm font-medium">自定义白名单</div>
+            <div class="text-sm font-medium">{t("settings.whitelist")}</div>
             <div class="text-xs text-zinc-500 mt-0.5">
-              已添加 {items().length} 项 · 白名单项永远不会被扫描或清理
+              {t("settings.whitelistCount", { count: items().length })}
             </div>
           </div>
           <button
@@ -154,7 +310,7 @@ const SettingsView: Component = () => {
             onClick={() => setAdding(!adding())}
           >
             <Plus size={14} />
-            添加
+            {t("common.add")}
           </button>
         </div>
 
@@ -168,13 +324,19 @@ const SettingsView: Component = () => {
                 }
                 class="rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10"
               >
-                <option value="process">进程名</option>
-                <option value="cache_path">缓存路径</option>
+                <option value="process">
+                  {t("settings.whitelistKindProcess")}
+                </option>
+                <option value="cache_path">
+                  {t("settings.whitelistKindPath")}
+                </option>
               </select>
               <input
                 type="text"
                 placeholder={
-                  kind() === "process" ? "例如 Chrome" : "例如 ~/.npm"
+                  kind() === "process"
+                    ? t("settings.whitelistKindProcessPH")
+                    : t("settings.whitelistKindPathPH")
                 }
                 value={value()}
                 onInput={(e) => setValue(e.currentTarget.value)}
@@ -183,7 +345,7 @@ const SettingsView: Component = () => {
             </div>
             <input
               type="text"
-              placeholder="备注（可选）"
+              placeholder={t("settings.whitelistNotePH")}
               value={note()}
               onInput={(e) => setNote(e.currentTarget.value)}
               class="w-full rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10"
@@ -194,10 +356,10 @@ const SettingsView: Component = () => {
                 class="btn-ghost"
                 onClick={() => setAdding(false)}
               >
-                取消
+                {t("common.cancel")}
               </button>
               <button type="button" class="btn-primary" onClick={submit}>
-                添加
+                {t("common.add")}
               </button>
             </div>
           </div>
@@ -207,7 +369,7 @@ const SettingsView: Component = () => {
           when={items().length > 0}
           fallback={
             <div class="text-center py-8 text-sm text-zinc-500">
-              还没有自定义白名单。在扫描列表上点击盾牌图标可以快速添加。
+              {t("settings.whitelistEmpty")}
             </div>
           }
         >
@@ -222,7 +384,9 @@ const SettingsView: Component = () => {
                         : "bg-warning-500/15 text-warning-600"
                     }`}
                   >
-                    {w.kind === "process" ? "进程" : "路径"}
+                    {w.kind === "process"
+                      ? t("settings.whitelistBadgeProcess")
+                      : t("settings.whitelistBadgePath")}
                   </span>
                   <div class="flex-1 min-w-0">
                     <div class="text-sm font-medium truncate">{w.value}</div>
@@ -248,16 +412,12 @@ const SettingsView: Component = () => {
       </div>
 
       <div class="card p-6">
-        <div class="text-sm font-medium mb-1">关于 MacFlow</div>
+        <div class="text-sm font-medium mb-1">{t("settings.about")}</div>
         <div class="text-xs text-zinc-500 space-y-1">
-          <div>版本 0.1.0 · 规则驱动 · 本地存储 · 开源友好</div>
-          <div>不上传任何数据，不接任何 LLM，不做广告推送</div>
-          <div class="font-mono text-[10px] mt-2">
-            数据：~/Library/Application Support/MacFlow/macflow.db
-          </div>
-          <div class="font-mono text-[10px]">
-            CLI：~/MacFlow/src-tauri/target/debug/macflow-cli
-          </div>
+          <div>{t("settings.aboutLine1")}</div>
+          <div>{t("settings.aboutLine2")}</div>
+          <div class="font-mono text-[10px] mt-2">{t("settings.aboutDb")}</div>
+          <div class="font-mono text-[10px]">{t("settings.aboutCli")}</div>
         </div>
       </div>
     </div>

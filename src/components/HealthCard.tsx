@@ -1,38 +1,40 @@
 import { Component, Show } from "solid-js";
 import RingProgress from "./RingProgress";
 import type { SystemHealth } from "@/lib/tauri";
+import { useI18n } from "@/i18n";
 
 type Props = { health: SystemHealth | null };
 
 const HealthCard: Component<Props> = (props) => {
+  const { t } = useI18n();
   return (
     <div class="card p-6 animate-fade-in">
       <div class="flex items-center justify-between mb-5">
         <div>
-          <h2 class="text-base font-semibold">系统健康</h2>
-          <p class="text-xs text-zinc-500 mt-0.5">实时监控 CPU / 内存 / 磁盘</p>
+          <h2 class="text-base font-semibold">{t("health.title")}</h2>
+          <p class="text-xs text-zinc-500 mt-0.5">{t("health.subtitle")}</p>
         </div>
         <Show
           when={props.health}
           fallback={
-            <span class="text-xs text-zinc-400">读取中...</span>
+            <span class="text-xs text-zinc-400">{t("health.reading")}</span>
           }
         >
           <span class="inline-flex items-center gap-1.5 text-xs text-zinc-500">
             <span class="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
-            正常运行
+            {t("health.normal")}
           </span>
         </Show>
       </div>
 
       <div class="grid grid-cols-3 gap-4">
         <Metric
-          label="CPU"
+          label={t("health.cpu")}
           value={props.health?.cpu_percent ?? 0}
           sub={props.health ? `${props.health.cpu_percent.toFixed(1)}%` : "—"}
         />
         <Metric
-          label="内存"
+          label={t("health.memory")}
           value={props.health?.memory_percent ?? 0}
           sub={
             props.health
@@ -43,7 +45,7 @@ const HealthCard: Component<Props> = (props) => {
           }
         />
         <Metric
-          label="磁盘"
+          label={t("health.disk")}
           value={props.health?.disk_percent ?? 0}
           sub={
             props.health

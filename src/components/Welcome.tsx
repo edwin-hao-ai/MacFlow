@@ -1,37 +1,40 @@
 import { Component } from "solid-js";
 import { Sparkles, ShieldCheck, Cpu, HardDrive } from "lucide-solid";
+import { useI18n } from "@/i18n";
 
 type Props = {
   onStart: () => void;
 };
 
 const Welcome: Component<Props> = (props) => {
+  const { t } = useI18n();
   return (
     <div class="flex flex-col items-center justify-center h-full text-center p-10 animate-fade-in">
       <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center mb-5 shadow-lg shadow-brand-500/30">
         <Sparkles size={28} class="text-white" />
       </div>
-      <h2 class="text-2xl font-semibold tracking-tight">欢迎使用 MacFlow</h2>
-      <p class="text-sm text-zinc-500 mt-2 max-w-md">
-        Mac 专属的一键式系统运维工具。<br />
-        清理冗余进程和开发缓存，让 Mac 保持轻快。
+      <h2 class="text-2xl font-semibold tracking-tight">
+        {t("welcome.title")}
+      </h2>
+      <p class="text-sm text-zinc-500 mt-2 max-w-md whitespace-pre-line">
+        {t("welcome.subtitle")}
       </p>
 
       <div class="grid grid-cols-3 gap-3 mt-8 max-w-xl">
         <Feature
           icon={Cpu}
-          title="进程优化"
-          desc="识别残留、重复、高占用进程"
+          title={t("welcome.featureProcessTitle")}
+          desc={t("welcome.featureProcessDesc")}
         />
         <Feature
           icon={HardDrive}
-          title="缓存清理"
-          desc="NPM · Docker · Xcode · Homebrew"
+          title={t("welcome.featureCacheTitle")}
+          desc={t("welcome.featureCacheDesc")}
         />
         <Feature
           icon={ShieldCheck}
-          title="安全可审计"
-          desc="规则驱动 · 工具原生命令 · 路径白名单"
+          title={t("welcome.featureSafetyTitle")}
+          desc={t("welcome.featureSafetyDesc")}
         />
       </div>
 
@@ -41,11 +44,11 @@ const Welcome: Component<Props> = (props) => {
         onClick={props.onStart}
       >
         <Sparkles size={16} />
-        开始扫描
+        {t("welcome.cta")}
       </button>
 
       <div class="mt-6 text-[11px] text-zinc-400">
-        所有操作本地执行 · 不上传数据 · 不接 AI API
+        {t("welcome.footer")}
       </div>
     </div>
   );

@@ -1,4 +1,10 @@
-import { Component, createSignal, onCleanup, onMount, Show } from "solid-js";
+import {
+  Component,
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 import HealthCard from "@/components/HealthCard";
 import ProcessList from "@/components/ProcessList";
 import Welcome from "@/components/Welcome";
@@ -11,10 +17,12 @@ import {
 } from "@/lib/tauri";
 import { Sparkles, RefreshCw, Loader2 } from "lucide-solid";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { useI18n } from "@/i18n";
 
 const WELCOME_SEEN_KEY = "macflow.welcome.seen";
 
 const ScanView: Component = () => {
+  const { t } = useI18n();
   const [result, setResult] = createSignal<ScanResult | null>(null);
   const [scanning, setScanning] = createSignal(false);
   const [selected, setSelected] = createSignal(new Set<number>());
@@ -35,13 +43,12 @@ const ScanView: Component = () => {
       );
       setSelected(defaults);
     } catch (e) {
-      setMessage(`扫描失败: ${String(e)}`);
+      setMessage(t("scan.scanFailed", { error: String(e) }));
     } finally {
       setScanning(false);
     }
   };
 
-  // 订阅后台监控的健康更新：不需要完整重扫就能看到 CPU/内存/磁盘变化
   let unlisten: UnlistenFn | undefined;
   onMount(async () => {
     if (!showWelcome()) {
@@ -78,13 +85,14 @@ const ScanView: Component = () => {
     setMessage(null);
     try {
       const r = await killProcesses(pids, names);
-      setMessage(
-        `已终止 ${r.killed.length} 个进程` +
-          (r.failed.length > 0 ? `，${r.failed.length} 个失败` : ""),
-      );
+      let msg = t("scan.killSuccess", { count: r.killed.length });
+      if (r.failed.length > 0) {
+        msg += t("scan.killPartial", { failed: r.failed.length });
+      }
+      setMessage(msg);
       await runScan();
     } catch (e) {
-      setMessage(`优化失败: ${String(e)}`);
+      setMessage(t("scan.optimizeFailed", { error: String(e) }));
     } finally {
       setOptimizing(false);
     }
@@ -103,8 +111,8 @@ const ScanView: Component = () => {
         selected={selected()}
         onToggle={toggle}
         onWhitelist={async (name) => {
-          await addWhitelist("process", name, "从扫描列表添加");
-          setMessage(`${name} 已加入白名单，下次扫描不会再显示`);
+          await addWhitelist("process", name, "scan list add");
+          setMessage(t("scan.whitelistAdded", { name }));
           await runScan();
         }}
       />
@@ -116,10 +124,14 @@ const ScanView: Component = () => {
           disabled={optimizing() || scanning() || selected().size === 0}
           onClick={optimize}
         >
-          <Show when={!optimizing()} fallback={<Loader2 size={16} class="animate-spin" />}>
+          <Show
+            when={!optimizing()}
+            fallback={<Loader2 size={16} class="animate-spin" />}
+          >
             <Sparkles size={16} />
           </Show>
-          一键优化 ({selected().size})
+          {t("scan.oneClick")}
+          {selected().size > 0 ? ` (${selected().size})` : ""}
         </button>
 
         <button
@@ -128,10 +140,13 @@ const ScanView: Component = () => {
           disabled={scanning()}
           onClick={runScan}
         >
-          <Show when={!scanning()} fallback={<Loader2 size={16} class="animate-spin" />}>
+          <Show
+            when={!scanning()}
+            fallback={<Loader2 size={16} class="animate-spin" />}
+          >
             <RefreshCw size={16} />
           </Show>
-          重新扫描
+          {t("common.rescan")}
         </button>
 
         <Show when={message()}>
@@ -139,7 +154,7 @@ const ScanView: Component = () => {
         </Show>
 
         <span class="ml-auto text-[11px] text-zinc-400">
-          此操作不可撤销，请确认后执行
+          {t("common.notice_irreversible")}
         </span>
       </div>
     </div>

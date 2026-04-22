@@ -1,6 +1,14 @@
 # 变更日志
 
-## v0.1.0 · 2026-04-21 (里程碑 1-3 合并)
+## v0.1.0 · 2026-04-21 (里程碑 1-4 合并)
+
+### 国际化 · Auto-update（本轮新增）
+- 全 UI 中英双语（zh-CN / en），自动跟随系统 / 手动切换
+- `@solid-primitives/i18n` 模式，`src/i18n/` 目录统一管理
+- Tauri Updater 插件接入，基于 minisign 签名
+- `scripts/publish-update.sh`：生成 manifest + 签名 DMG
+- Updater 公钥已嵌入 `tauri.conf.json`，私钥在 `~/.tauri/macflow-updater.key`（不入库）
+- 设置页新增「检查更新」按钮，支持进度显示 + 自动重启
 
 ### 核心能力
 - 首版桌面应用：Tauri v2 + SolidJS 1.9 + Tailwind CSS v4
@@ -55,13 +63,13 @@
 - 当前状态：DMG 已签名（Developer ID 可识别），公证待 Apple timestamp 服务恢复后执行
 
 ### 实测数字
-- DMG 体积：**6.5 MB**
-- .app bundle：13 MB
-- 单二进制：6.6 MB
-- 前端 bundle：97 KB（gzip 28 KB）
+- DMG 体积：**8.0 MB**（含 updater + i18n + 完整 Apple Developer ID 签名）
+- .app bundle：约 17 MB
+- 单二进制：7.8 MB（启用 LTO + strip）
+- 前端 bundle：120 KB（gzip 34 KB，含 i18n 字典）
 - 冷启动 RSS：~98 MB
 - 首次扫描：< 3 秒
-- 真实环境扫到：4.78 GB 可清理缓存（我的 Mac）
+- 真实环境扫到：4.65 GB 可清理缓存（我的 Mac）
 
 ### 文档
 - PRD.md 完整产品需求

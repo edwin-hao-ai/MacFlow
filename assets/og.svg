@@ -96,7 +96,7 @@
     <!-- Stats row -->
     <g transform="translate(0, 200)">
       <g transform="translate(0, 0)">
-        <text font-family="-apple-system, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#title)">6.5 MB</text>
+        <text font-family="-apple-system, system-ui, sans-serif" font-size="52" font-weight="700" fill="url(#title)">8.0 MB</text>
         <text y="36" font-family="-apple-system, system-ui, sans-serif" font-size="18" fill="#71717a">DMG 体积</text>
       </g>
       <g transform="translate(240, 0)">

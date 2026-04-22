@@ -1,6 +1,7 @@
 import { Component, For, Show } from "solid-js";
 import type { ProcessInfo } from "@/lib/tauri";
 import { ShieldCheck } from "lucide-solid";
+import { useI18n } from "@/i18n";
 
 type Props = {
   processes: ProcessInfo[];
@@ -9,35 +10,40 @@ type Props = {
   onWhitelist?: (name: string) => void;
 };
 
-const kindLabel: Record<string, string> = {
-  zombie: "僵尸进程",
-  idle: "长期闲置",
-  hog: "资源大户",
-  dev: "开发工具",
-  system: "系统进程",
-  foreground: "前台活跃",
-};
-
-const riskBadge = (risk: ProcessInfo["risk"]) => {
-  switch (risk) {
-    case "safe":
-      return <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-success-500/15 text-success-600">安全</span>;
-    case "low":
-      return <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-warning-500/15 text-warning-600">低风险</span>;
-    case "dev":
-      return <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-brand-500/15 text-brand-600">开发</span>;
-    default:
-      return null;
-  }
-};
-
 const ProcessList: Component<Props> = (props) => {
+  const { t } = useI18n();
+
+  const riskBadge = (risk: ProcessInfo["risk"]) => {
+    switch (risk) {
+      case "safe":
+        return (
+          <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-success-500/15 text-success-600">
+            {t("risk.safe")}
+          </span>
+        );
+      case "low":
+        return (
+          <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-warning-500/15 text-warning-600">
+            {t("risk.low")}
+          </span>
+        );
+      case "dev":
+        return (
+          <span class="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-brand-500/15 text-brand-600">
+            {t("risk.dev")}
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div class="card p-4 animate-fade-in">
       <div class="flex items-center justify-between mb-3 px-1">
-        <h3 class="text-sm font-semibold">可优化进程</h3>
+        <h3 class="text-sm font-semibold">{t("scan.processListTitle")}</h3>
         <span class="text-xs text-zinc-500">
-          {props.processes.length} 项
+          {t("scan.itemsCount", { count: props.processes.length })}
         </span>
       </div>
 
@@ -45,7 +51,7 @@ const ProcessList: Component<Props> = (props) => {
         when={props.processes.length > 0}
         fallback={
           <div class="text-center py-12 text-sm text-zinc-500">
-            没有发现可优化的进程，系统运行良好
+            {t("scan.noProcesses")}
           </div>
         }
       >
@@ -64,7 +70,7 @@ const ProcessList: Component<Props> = (props) => {
                     <span class="truncate font-medium text-sm">{p.name}</span>
                     {riskBadge(p.risk)}
                     <span class="text-[10px] text-zinc-400">
-                      {kindLabel[p.kind] ?? p.kind}
+                      {t(`kind.${p.kind}`)}
                     </span>
                     <Show when={p.ports.length > 0}>
                       <span class="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-medium bg-brand-500/10 text-brand-700 dark:text-brand-300">
@@ -84,7 +90,7 @@ const ProcessList: Component<Props> = (props) => {
                 <Show when={props.onWhitelist}>
                   <button
                     type="button"
-                    title="加入白名单（永不再扫描此进程）"
+                    title={t("scan.whitelistTooltip")}
                     onClick={() => props.onWhitelist?.(p.name)}
                     class="p-1.5 rounded-lg text-zinc-400 hover:text-brand-600 hover:bg-brand-500/10 transition-colors"
                   >

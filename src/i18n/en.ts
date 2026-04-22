@@ -1,0 +1,166 @@
+import type { Dict } from "./zh-CN";
+
+export const en: Dict = {
+  common: {
+    appName: "MacFlow",
+    tagline: "One-click Mac optimization",
+    scan: "Scan",
+    rescan: "Rescan",
+    cancel: "Cancel",
+    confirm: "Confirm",
+    close: "Close",
+    back: "Back",
+    save: "Save",
+    remove: "Remove",
+    add: "Add",
+    loading: "Loading...",
+    scanning: "Scanning...",
+    optimizing: "Optimizing...",
+    cleaning: "Cleaning...",
+    version: "Version",
+    notice_irreversible: "This action cannot be undone",
+  },
+
+  nav: {
+    scan: "Smart Scan",
+    process: "Processes",
+    cache: "Cache",
+    history: "History",
+    settings: "Settings",
+  },
+
+  welcome: {
+    title: "Welcome to MacFlow",
+    subtitle:
+      "A one-click Mac system maintenance tool.\nCleans residual processes and developer caches to keep your Mac snappy.",
+    featureProcessTitle: "Process Cleanup",
+    featureProcessDesc: "Find zombies, idle, and resource-hog processes",
+    featureCacheTitle: "Cache Cleanup",
+    featureCacheDesc: "NPM · Docker · Xcode · Homebrew",
+    featureSafetyTitle: "Safe & Auditable",
+    featureSafetyDesc: "Rule-driven · native commands · path allowlist",
+    cta: "Start Scanning",
+    footer: "Runs 100% locally · no data uploaded · no AI APIs",
+  },
+
+  health: {
+    title: "System Health",
+    subtitle: "Live CPU / Memory / Disk",
+    reading: "Reading...",
+    normal: "Normal",
+    cpu: "CPU",
+    memory: "Memory",
+    disk: "Disk",
+  },
+
+  scan: {
+    processListTitle: "Optimizable Processes",
+    itemsCount: "{count} items",
+    noProcesses: "No processes to optimize — your Mac is healthy",
+    oneClick: "Optimize",
+    selectedCount: "{count} selected",
+    killSuccess: "Terminated {count} processes",
+    killPartial: ", {failed} failed",
+    whitelistAdded: "{name} added to whitelist; hidden from future scans",
+    scanFailed: "Scan failed: {error}",
+    optimizeFailed: "Optimization failed: {error}",
+    whitelistTooltip: "Whitelist (never scan this process again)",
+  },
+
+  kind: {
+    zombie: "Zombie",
+    idle: "Idle",
+    hog: "Resource Hog",
+    dev: "Dev Tool",
+    system: "System",
+    foreground: "Foreground",
+  },
+
+  risk: {
+    safe: "Safe",
+    low: "Low Risk",
+    dev: "Dev",
+    notice: "Caution",
+  },
+
+  cache: {
+    title: "Developer Caches",
+    subtitle: "NPM / Docker / Xcode / Homebrew / Cargo and more",
+    scanning: "Scanning caches...",
+    freeable: "Reclaimable",
+    cleanCta: "Clean {size} ({count})",
+    clean: "Clean",
+    cleanSuccess: "Cleanup complete — freed {size}",
+    successItems: "{count} succeeded",
+    failItems: "{count} failed",
+    groupCount: "{count} items · {size}",
+    noItems: "No caches to clean. Your Mac is spotless.",
+    partialFail: "Some items failed to clean",
+    notifyTitle: "MacFlow cleanup complete",
+    notifyBody: "Freed {size} across {count} items",
+  },
+
+  history: {
+    title: "Operation History",
+    subtitle:
+      "Local log of all process and cache cleanup operations. Metadata only, nothing uploaded.",
+    empty: "No operations yet",
+    opProcessKill: "Process cleanup",
+    opCacheClean: "Cache cleanup",
+  },
+
+  settings: {
+    general: "General",
+    generalDesc: "Behavior toggles",
+    autostart: "Launch at login",
+    autostartDesc:
+      "Start MacFlow at macOS login and minimize to the menu bar",
+    notifyClean: "Cleanup notifications",
+    notifyCleanDesc: "Show a macOS notification when cleanup completes",
+    notifyRequestPrompt: "Notifications not permitted — click to request",
+    language: "Interface Language",
+    languageDesc: "Switch between Chinese and English (restart required)",
+    languageAuto: "System",
+    languageZh: "中文",
+    languageEn: "English",
+    updates: "Check for Updates",
+    updatesDesc: "Manually check whether a newer MacFlow is available",
+    updatesCheck: "Check",
+    updatesChecking: "Checking...",
+    updatesLatest: "You are on the latest version ({version})",
+    updatesAvailable: "Version {version} available",
+    updatesDownload: "Download & Restart",
+    updatesDownloading: "Downloading...",
+    updatesError: "Check failed: {error}",
+    whitelist: "Custom Whitelist",
+    whitelistCount:
+      "{count} items · whitelisted items are never scanned or cleaned",
+    whitelistEmpty:
+      "No custom whitelist yet. Click the shield icon in the scan list to add.",
+    whitelistKindProcess: "Process name",
+    whitelistKindPath: "Cache path",
+    whitelistKindProcessPH: "e.g. Chrome",
+    whitelistKindPathPH: "e.g. ~/.npm",
+    whitelistNotePH: "Note (optional)",
+    whitelistBadgeProcess: "Process",
+    whitelistBadgePath: "Path",
+    about: "About MacFlow",
+    aboutLine1:
+      "v0.1.0 · rule-driven · local storage · open-source friendly",
+    aboutLine2: "No data uploaded · no LLM · no ads",
+    aboutDb: "Data: ~/Library/Application Support/MacFlow/macflow.db",
+    aboutCli: "CLI: ~/MacFlow/src-tauri/target/debug/macflow-cli",
+  },
+
+  placeholder: {
+    processTitle: "Processes",
+    processDesc:
+      "Advanced filters, quick whitelist, port inspection. Coming in M3.",
+    cacheTitle: "Cache",
+    cacheDesc:
+      "Deep clean NPM / Docker / Xcode / Homebrew. Coming in M2.",
+    settingsTitle: "Settings",
+    settingsDesc:
+      "Launch at login, auto monitoring, cleanup thresholds. Coming in M3.",
+  },
+};

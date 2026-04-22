@@ -2,13 +2,10 @@ import { Component, createSignal, For, onMount, Show } from "solid-js";
 import { getHistory, type HistoryEntry } from "@/lib/tauri";
 import { fmtBytes, fmtRelativeTime } from "@/lib/format";
 import { CheckCircle2, XCircle, Cpu, HardDrive, Loader2 } from "lucide-solid";
-
-const opLabels: Record<string, string> = {
-  process_kill: "进程清理",
-  cache_clean: "缓存清理",
-};
+import { useI18n } from "@/i18n";
 
 const HistoryView: Component = () => {
+  const { t } = useI18n();
   const [entries, setEntries] = createSignal<HistoryEntry[]>([]);
   const [loading, setLoading] = createSignal(false);
 
@@ -24,13 +21,18 @@ const HistoryView: Component = () => {
 
   onMount(load);
 
+  const opLabel = (op: string) =>
+    op === "process_kill"
+      ? t("history.opProcessKill")
+      : op === "cache_clean"
+        ? t("history.opCacheClean")
+        : op;
+
   return (
     <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
       <div class="card p-6">
-        <h2 class="text-base font-semibold">操作历史</h2>
-        <p class="text-xs text-zinc-500 mt-0.5">
-          所有进程和缓存清理操作的本地日志。只记录元数据，不上传任何内容。
-        </p>
+        <h2 class="text-base font-semibold">{t("history.title")}</h2>
+        <p class="text-xs text-zinc-500 mt-0.5">{t("history.subtitle")}</p>
       </div>
 
       <Show
@@ -38,7 +40,7 @@ const HistoryView: Component = () => {
         fallback={
           <div class="text-center py-12 text-sm text-zinc-500 flex items-center justify-center gap-2">
             <Loader2 size={14} class="animate-spin" />
-            加载中...
+            {t("common.loading")}
           </div>
         }
       >
@@ -46,7 +48,7 @@ const HistoryView: Component = () => {
           when={entries().length > 0}
           fallback={
             <div class="card p-12 text-center text-sm text-zinc-500">
-              还没有任何操作记录
+              {t("history.empty")}
             </div>
           }
         >
@@ -92,7 +94,7 @@ const HistoryView: Component = () => {
                         </Show>
                       </div>
                       <div class="text-xs text-zinc-500 mt-0.5">
-                        {opLabels[e.operation] ?? e.operation} · {e.detail}
+                        {opLabel(e.operation)} · {e.detail}
                       </div>
                     </div>
                     <div class="text-right text-xs text-zinc-500 tabular-nums flex-shrink-0">
