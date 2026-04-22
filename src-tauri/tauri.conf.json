@@ -37,6 +37,10 @@
     "icon": [
       "icons/icon.icns"
     ],
+    "resources": [
+      "icons/tray-icon.png",
+      "icons/tray-icon@2x.png"
+    ],
     "category": "DeveloperTool",
     "shortDescription": "一键式 Mac 系统运维工具",
     "longDescription": "MacFlow 帮助你清理冗余进程、开发缓存，让 Mac 保持轻快。",

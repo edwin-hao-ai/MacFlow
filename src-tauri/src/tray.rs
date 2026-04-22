@@ -1,8 +1,9 @@
 use crate::scanner::SystemHealth;
 use std::sync::Mutex;
 use tauri::{
+    image::Image,
     menu::{Menu, MenuItem, PredefinedMenuItem},
-    tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Emitter, Manager,
 };
 
@@ -60,43 +61,39 @@ pub fn init_tray(app: &AppHandle) -> tauri::Result<()> {
         health_header: Mutex::new(health_header),
     });
 
+    // 加载菜单栏专用模板图标（纯黑 sparkle 轮廓，macOS 自动适配深浅色）
+    let tray_icon = load_tray_icon(app);
+
     let _ = TrayIconBuilder::with_id("main-tray")
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(tray_icon)
         .icon_as_template(true)
         .tooltip("MacFlow")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| {
+            // 左键点击 → 切换窗口显隐（再次点击会把窗口收回）
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
                 ..
             } = event
             {
-                if let Some(window) = tray.app_handle().get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
-                }
+                toggle_main_window(tray.app_handle());
             }
         })
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
-                if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
-                }
+                show_and_focus(app);
             }
             "scan" => {
+                show_and_focus(app);
                 if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
                     let _ = window.emit("tray:scan", ());
                 }
             }
             "optimize" => {
+                show_and_focus(app);
                 if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
-                    // 前端监听 tray:optimize，执行默认选中项清理
                     let _ = window.emit("tray:optimize", ());
                 }
             }
@@ -108,6 +105,38 @@ pub fn init_tray(app: &AppHandle) -> tauri::Result<()> {
         .build(app)?;
 
     Ok(())
+}
+
+/// 编译期嵌入的菜单栏模板图标 —— 保证无论开发 / 打包都有正确的纯黑 sparkle
+const TRAY_ICON_PNG: &[u8] = include_bytes!("../icons/tray-icon@2x.png");
+
+/// 读取菜单栏 icon：优先用编译期嵌入的专用模板图标
+fn load_tray_icon(_app: &AppHandle) -> Image<'static> {
+    Image::from_bytes(TRAY_ICON_PNG)
+        .expect("failed to parse embedded tray icon")
+        .to_owned()
+}
+
+fn show_and_focus(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
+fn toggle_main_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let visible = window.is_visible().unwrap_or(false);
+        let focused = window.is_focused().unwrap_or(false);
+        if visible && focused {
+            let _ = window.hide();
+        } else {
+            let _ = window.show();
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+        }
+    }
 }
 
 /// 根据系统健康状态更新托盘的 title（菜单栏显示文字）+ tooltip + 菜单项。

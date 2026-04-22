@@ -24,7 +24,7 @@ use serde::Serialize;
 use std::sync::{Arc, Mutex};
 use storage::{HistoryEntry, Storage, WhitelistEntry};
 use sysinfo::System;
-use tauri::{Manager, State};
+use tauri::{Manager, State, WindowEvent};
 
 pub struct AppState {
     pub sys: Mutex<System>,
@@ -202,6 +202,14 @@ pub fn run() {
                 monitor::start_background_monitor(app.handle().clone());
 
                 Ok(())
+            }
+        })
+        .on_window_event(|window, event| {
+            // 点 X 关闭 → 不退出应用，只把窗口藏起来，托盘保持驻留
+            // 真正退出通过托盘菜单「退出 MacFlow」
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                let _ = window.hide();
+                api.prevent_close();
             }
         })
         .invoke_handler(tauri::generate_handler![

@@ -15,6 +15,7 @@ import {
 } from "@/lib/tauri";
 import {
   Loader2,
+  Network,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -39,6 +40,7 @@ const ProcessView: Component = () => {
   const [rows, setRows] = createSignal<ProcessRow[]>([]);
   const [loading, setLoading] = createSignal(false);
   const [query, setQuery] = createSignal("");
+  const [portsOnly, setPortsOnly] = createSignal(false);
   const [sortKey, setSortKey] = createSignal<SortKey>("memory");
   const [sortDir, setSortDir] = createSignal<"desc" | "asc">("desc");
   const [selected, setSelected] = createSignal(new Set<number>());
@@ -70,6 +72,12 @@ const ProcessView: Component = () => {
   const filtered = createMemo(() => {
     const q = query().trim().toLowerCase();
     let list = rows();
+
+    // 仅端口占用筛选：方便开发者快速找到占用 3000 / 8080 等端口的进程
+    if (portsOnly()) {
+      list = list.filter((r) => r.ports.length > 0);
+    }
+
     if (q) {
       list = list.filter(
         (r) =>
@@ -79,9 +87,16 @@ const ProcessView: Component = () => {
           r.ports.some((p) => String(p).includes(q)),
       );
     }
+
     const key = sortKey();
     const dir = sortDir() === "desc" ? -1 : 1;
     list = [...list].sort((a, b) => {
+      // 端口模式下按最小端口号排序
+      if (portsOnly() && key === "memory") {
+        const aPort = a.ports[0] ?? Number.MAX_SAFE_INTEGER;
+        const bPort = b.ports[0] ?? Number.MAX_SAFE_INTEGER;
+        return aPort - bPort;
+      }
       switch (key) {
         case "memory":
           return dir * (a.memory_mb - b.memory_mb);
@@ -204,6 +219,20 @@ const ProcessView: Component = () => {
           </div>
         </div>
 
+        <button
+          type="button"
+          onClick={() => setPortsOnly(!portsOnly())}
+          title={portsOnly() ? "关闭端口筛选" : "只看占用端口的进程"}
+          class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            portsOnly()
+              ? "bg-brand-500 text-white"
+              : "bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-black/10 dark:hover:bg-white/10"
+          }`}
+        >
+          <Network size={12} />
+          仅端口占用
+        </button>
+
         <div class="relative">
           <Search
             size={14}
@@ -300,9 +329,16 @@ const ProcessView: Component = () => {
                     <div class="flex items-center gap-2 min-w-0">
                       <span class="truncate font-medium">{r.name}</span>
                       <Show when={r.ports.length > 0}>
-                        <span class="px-1.5 py-0.5 rounded-md text-[9px] font-mono font-medium bg-brand-500/10 text-brand-700 dark:text-brand-300">
-                          :{r.ports.slice(0, 2).join(",")}
-                          {r.ports.length > 2 && "+"}
+                        <span
+                          class="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-brand-500/15 text-brand-700 dark:text-brand-300"
+                          title={`监听端口: ${r.ports.join(", ")}`}
+                        >
+                          :
+                          {portsOnly()
+                            ? r.ports.join(", ")
+                            : r.ports.length <= 2
+                              ? r.ports.join(",")
+                              : `${r.ports.slice(0, 2).join(",")}+${r.ports.length - 2}`}
                         </span>
                       </Show>
                       <Show when={r.status === "僵尸" || r.status === "已死"}>

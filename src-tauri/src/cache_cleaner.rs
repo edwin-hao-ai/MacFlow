@@ -176,35 +176,28 @@ pub async fn clean(items: Vec<CacheItem>) -> CleanSummary {
 }
 
 async fn run_shell_command(cmd: &str) -> Result<(), String> {
-    // 命令都是写死在 scanner 里的常量，不是用户输入，所以 shell 注入安全。
-    let parts: Vec<&str> = cmd.split_whitespace().collect();
-    if parts.is_empty() {
-        return Err("空命令".into());
-    }
-
     // 关键：Tauri GUI 启动时 macOS 只给了极短的默认 PATH（/usr/bin:/bin:/usr/sbin:/sbin），
-    // pip / brew / pnpm / docker 等工具根本找不到。需要：
-    // 1) 扩充 PATH 环境变量
-    // 2) 如果能定位到绝对路径则直接用绝对路径
-    let augmented_path = augmented_path_for_spawn();
+    // 而 pip / brew / pnpm / docker 等工具都在用户自己装的地方。
+    //
+    // 最靠谱的做法：用 login shell（-l）执行命令。
+    // login shell 会读用户的 ~/.zshrc / ~/.bash_profile / ~/.profile 等配置，
+    // 自动拿到 Homebrew / Anaconda / rustup / cargo / pnpm / nvm 等所有工具的 PATH。
+    //
+    // 这就是 macOS 菜单栏应用运行命令的标准做法。
 
-    // 用 which::which 在扩充后的 PATH 里找工具的绝对路径
-    let exe = match resolve_tool(parts[0], &augmented_path) {
-        Some(p) => p,
-        None => {
-            return Err(format!(
-                "找不到命令 `{}`，请确认已安装并在 PATH 中",
-                parts[0]
-            ))
-        }
-    };
+    let shell = detect_user_shell();
+    let augmented = augmented_path_for_spawn();
 
-    let output = tokio::process::Command::new(&exe)
-        .args(&parts[1..])
-        .env("PATH", &augmented_path)
+    // -l: login shell，读配置; -c: 执行命令字符串
+    let output = tokio::process::Command::new(&shell)
+        .args(["-l", "-c", cmd])
+        .env("PATH", &augmented)
+        // 确保 login shell 能读到 HOME / TERM 等
+        .env("HOME", std::env::var("HOME").unwrap_or_default())
+        .env("TERM", "xterm-256color")
         .output()
         .await
-        .map_err(|e| format!("启动失败: {}", e))?;
+        .map_err(|e| format!("启动失败 ({}): {}", shell, e))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -221,13 +214,28 @@ async fn run_shell_command(cmd: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// 构造一个包含常见开发工具安装位置的 PATH，用于子进程 spawn。
+/// 检测用户使用的 shell。优先级：$SHELL > /bin/zsh > /bin/bash > /bin/sh
+fn detect_user_shell() -> String {
+    if let Ok(s) = std::env::var("SHELL") {
+        if !s.is_empty() && std::path::Path::new(&s).exists() {
+            return s;
+        }
+    }
+    // macOS 10.15+ 默认 zsh
+    for candidate in ["/bin/zsh", "/bin/bash", "/bin/sh"] {
+        if std::path::Path::new(candidate).exists() {
+            return candidate.to_string();
+        }
+    }
+    "/bin/sh".to_string()
+}
+
+/// 构造增强 PATH（兜底用，login shell 为主力）。
 fn augmented_path_for_spawn() -> String {
     let home = dirs::home_dir()
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_default();
 
-    // 按优先级排：用户目录 → Homebrew → Apple silicon brew → 系统
     let candidates = [
         format!("{}/.cargo/bin", home),
         format!("{}/.npm-global/bin", home),
@@ -243,45 +251,25 @@ fn augmented_path_for_spawn() -> String {
         format!("{}/miniconda3/bin", home),
         format!("{}/.local/bin", home),
         format!("{}/go/bin", home),
-        "/opt/homebrew/bin".to_string(), // Apple Silicon brew
+        "/opt/homebrew/bin".to_string(),
         "/opt/homebrew/sbin".to_string(),
-        "/usr/local/bin".to_string(), // Intel brew
+        "/usr/local/bin".to_string(),
         "/usr/local/sbin".to_string(),
         "/Library/Frameworks/Python.framework/Versions/3.13/bin".to_string(),
         "/Library/Frameworks/Python.framework/Versions/3.12/bin".to_string(),
         "/Library/Frameworks/Python.framework/Versions/3.11/bin".to_string(),
-        "/Library/Frameworks/Python.framework/Versions/3.10/bin".to_string(),
         "/usr/bin".to_string(),
         "/bin".to_string(),
         "/usr/sbin".to_string(),
         "/sbin".to_string(),
     ];
 
-    // 保留环境里已有的 PATH 作为兜底
     let existing = std::env::var("PATH").unwrap_or_default();
     let mut parts: Vec<String> = candidates.into_iter().collect();
     if !existing.is_empty() {
         parts.push(existing);
     }
     parts.join(":")
-}
-
-/// 在给定 PATH 下解析工具的绝对路径。
-fn resolve_tool(name: &str, path: &str) -> Option<PathBuf> {
-    // 临时设置 PATH 让 which crate 用
-    for dir in path.split(':') {
-        let p = PathBuf::from(dir).join(name);
-        if p.is_file() {
-            // 检查可执行
-            if let Ok(meta) = std::fs::metadata(&p) {
-                use std::os::unix::fs::PermissionsExt;
-                if meta.permissions().mode() & 0o111 != 0 {
-                    return Some(p);
-                }
-            }
-        }
-    }
-    None
 }
 
 async fn remove_directory(path: &Path) -> Result<(), String> {
