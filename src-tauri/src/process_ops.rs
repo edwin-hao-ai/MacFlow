@@ -12,7 +12,13 @@ pub enum KillOutcome {
     Success,
     AlreadyGone,
     PermissionDenied,
-    Restarted, // SIGTERM 成功但进程还在（可能有 supervisor）
+    /// 目标 PID 已死，但同名同路径的进程以新 PID 重新出现 —— 说明有 supervisor 守护
+    RespawnedAs {
+        new_pid: u32,
+        name: String,
+    },
+    /// SIGKILL 发了进程还在（非常罕见，一般只有僵死或受保护才会这样）
+    StillAlive,
     Failed(String),
 }
 
@@ -27,10 +33,14 @@ impl KillOutcome {
             KillOutcome::PermissionDenied => {
                 "权限不足（通常是 root 或系统进程，MacFlow 不应该看到这类进程）".into()
             }
-            KillOutcome::Restarted => {
-                "已发送终止信号，但进程立刻被 supervisor 重启（如 npm / pm2 / launchd）。\
-                 请从上游进程（例如 npm / pnpm / pm2 / launchctl）终止。"
-                    .into()
+            KillOutcome::RespawnedAs { new_pid, name } => format!(
+                "原进程已终止，但一个 supervisor 立刻以新 PID {} 重启了 `{}`。\
+                 请从上游启动器（launchd agent / pm2 / nvm / Cursor / VS Code 等）停止，\
+                 或把此进程名加入白名单屏蔽显示。",
+                new_pid, name
+            ),
+            KillOutcome::StillAlive => {
+                "SIGKILL 已发送，但系统报告进程仍存活。可能是僵死进程或受内核保护。".into()
             }
             KillOutcome::Failed(e) => format!("失败: {}", e),
         }
@@ -51,67 +61,115 @@ pub fn graceful_kill(pid: u32) -> KillOutcome {
     let mut sys = System::new();
     sys.refresh_all();
 
-    // 如果进程已经不存在，直接返回
     let target = Pid::from_raw(pid as i32);
     if !process_exists(target) {
         return KillOutcome::AlreadyGone;
     }
 
+    // 记下目标进程的 name / exe，之后用来判断是否被 supervisor 重启
+    // 注意：sysinfo::Pid 不同于 nix::unistd::Pid
+    let target_name: Option<String>;
+    let target_exe: Option<std::path::PathBuf>;
+    {
+        let p = sys.process(sysinfo::Pid::from_u32(pid));
+        target_name = p.map(|proc| proc.name().to_string_lossy().to_string());
+        target_exe = p.and_then(|proc| proc.exe().map(|e| e.to_path_buf()));
+    }
+
     // 收集整棵子树（含自身）
     let tree = collect_descendants(&sys, pid);
-
-    // 第一轮：SIGTERM（从叶子往上发）
     let mut ordered: Vec<u32> = tree.iter().copied().collect();
     ordered.sort_by(|a, b| {
         let da = depth(&sys, *a);
         let db = depth(&sys, *b);
-        db.cmp(&da) // 更深的（叶子）先杀
+        db.cmp(&da)
     });
 
+    // 第一轮：SIGTERM（从叶子往上发）
     for p in &ordered {
         let np = Pid::from_raw(*p as i32);
         match kill(np, Signal::SIGTERM) {
             Ok(_) | Err(Errno::ESRCH) => {}
             Err(Errno::EPERM) => return KillOutcome::PermissionDenied,
-            Err(e) => {
-                // 其他错误记录但继续试
-                let _ = e;
-            }
+            Err(_) => {}
         }
     }
 
-    // 等 3 秒（分 6 次采样判断是否已清干净）
+    // 等 3 秒判断目标是否消失
+    let mut target_gone = false;
     for _ in 0..6 {
         sleep(Duration::from_millis(500));
         if !process_exists(target) {
-            return KillOutcome::Success;
+            target_gone = true;
+            break;
         }
     }
 
-    // 第二轮：SIGKILL
-    for p in &ordered {
-        let np = Pid::from_raw(*p as i32);
-        let _ = kill(np, Signal::SIGKILL);
+    // 目标还没死 → SIGKILL 子树
+    if !target_gone {
+        for p in &ordered {
+            let np = Pid::from_raw(*p as i32);
+            let _ = kill(np, Signal::SIGKILL);
+        }
+        sleep(Duration::from_secs(1));
+        target_gone = !process_exists(target);
     }
 
-    // 最后再等 1 秒确认
-    sleep(Duration::from_secs(1));
-    if !process_exists(target) {
-        return KillOutcome::Success;
+    if !target_gone {
+        // SIGKILL 都失败了（极罕见）
+        return KillOutcome::StillAlive;
     }
 
-    // 都杀了还活着 → 99% 是被 supervisor 重启了
-    if let Err(e) = kill(target, Signal::SIGKILL) {
-        return KillOutcome::Failed(format!("SIGKILL 失败: {}", e));
+    // 目标进程确实死了 —— 但看 supervisor 有没有立刻以新 PID 拉起同名进程
+    // 给 supervisor 一点时间（2 秒）复活
+    sleep(Duration::from_millis(1200));
+    let respawn = detect_respawn(pid, target_name.as_deref(), target_exe.as_deref());
+    if let Some((new_pid, name)) = respawn {
+        return KillOutcome::RespawnedAs { new_pid, name };
     }
 
-    // 最后再查一次：如果仍然在，只能是 supervisor restart
-    sleep(Duration::from_millis(500));
-    if process_exists(target) {
-        KillOutcome::Restarted
-    } else {
-        KillOutcome::Success
+    KillOutcome::Success
+}
+
+/// 判断是否有同名同路径的新进程冒出来（supervisor 重启）
+fn detect_respawn(
+    old_pid: u32,
+    name: Option<&str>,
+    exe: Option<&std::path::Path>,
+) -> Option<(u32, String)> {
+    let mut sys = System::new();
+    sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+
+    for (pid, proc) in sys.processes() {
+        let pid_u32 = pid.as_u32();
+        if pid_u32 == old_pid {
+            continue; // 同 PID 不算重启
+        }
+        let pname = proc.name().to_string_lossy().to_string();
+        let pexe = proc.exe();
+
+        // name + exe 都一致才算重启（避免把普通同名进程误判为重启）
+        let name_match = name.map(|n| n == pname).unwrap_or(false);
+        let exe_match = match (exe, pexe) {
+            (Some(a), Some(b)) => a == b,
+            // 有一个没路径信息 → 只匹配 name 也算
+            _ => name_match,
+        };
+
+        if name_match && exe_match {
+            // 为避免匹配到已经运行很久的同名进程（巧合），
+            // 要求新进程启动时间距「kill 时刻」很近（最近 3 秒内）
+            let started = proc.start_time();
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0);
+            if now.saturating_sub(started) < 3 {
+                return Some((pid_u32, pname));
+            }
+        }
     }
+    None
 }
 
 /// 非破坏性探测：进程是否存在

@@ -5,6 +5,8 @@ import CacheView from "@/views/CacheView";
 import HistoryView from "@/views/HistoryView";
 import SettingsView from "@/views/SettingsView";
 import ProcessView from "@/views/ProcessView";
+import ApplicationsView from "@/views/ApplicationsView";
+import DockerView from "@/views/DockerView";
 import { listen } from "@tauri-apps/api/event";
 import { useI18n } from "@/i18n";
 
@@ -35,8 +37,14 @@ const App: Component = () => {
             <Match when={view() === "process"}>
               <ProcessView />
             </Match>
+            <Match when={view() === "applications"}>
+              <ApplicationsView />
+            </Match>
             <Match when={view() === "cache"}>
               <CacheView />
+            </Match>
+            <Match when={view() === "docker"}>
+              <DockerView />
             </Match>
             <Match when={view() === "history"}>
               <HistoryView />

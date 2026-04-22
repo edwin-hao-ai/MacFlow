@@ -4,11 +4,20 @@ import {
   Cpu,
   HardDrive,
   History as HistoryIcon,
+  Package,
+  Container,
   Settings as SettingsIcon,
 } from "lucide-solid";
 import { useI18n } from "@/i18n";
 
-export type ViewId = "scan" | "process" | "cache" | "history" | "settings";
+export type ViewId =
+  | "scan"
+  | "process"
+  | "applications"
+  | "cache"
+  | "docker"
+  | "history"
+  | "settings";
 
 type Props = {
   current: ViewId;
@@ -18,7 +27,9 @@ type Props = {
 const items: { id: ViewId; icon: Component<{ size?: number }> }[] = [
   { id: "scan", icon: Activity },
   { id: "process", icon: Cpu },
+  { id: "applications", icon: Package },
   { id: "cache", icon: HardDrive },
+  { id: "docker", icon: Container },
   { id: "history", icon: HistoryIcon },
   { id: "settings", icon: SettingsIcon },
 ];

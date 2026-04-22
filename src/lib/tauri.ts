@@ -80,6 +80,97 @@ export async function listAllProcesses(): Promise<ProcessRow[]> {
   return invoke("list_all_processes");
 }
 
+// ========== 应用程序管理 ==========
+
+export type AppInfo = {
+  bundle_path: string;
+  name: string;
+  bundle_id: string;
+  main_pid: number;
+  all_pids: number[];
+  memory_mb: number;
+  cpu_percent: number;
+  uptime_secs: number;
+  ports: number[];
+  is_system: boolean;
+};
+
+export async function listApplications(): Promise<AppInfo[]> {
+  return invoke("list_applications");
+}
+
+export async function quitApplication(name: string): Promise<void> {
+  return invoke("quit_application", { name });
+}
+
+export async function forceQuitApplication(
+  pids: number[],
+): Promise<[number, string][]> {
+  return invoke("force_quit_application", { pids });
+}
+
+// ========== Docker 深度视图 ==========
+
+export type DockerImage = {
+  id: string;
+  repository: string;
+  tag: string;
+  size_bytes: number;
+  created: string;
+  dangling: boolean;
+  in_use: boolean;
+};
+
+export type DockerContainer = {
+  id: string;
+  name: string;
+  image: string;
+  status: string;
+  running: boolean;
+  size_bytes: number;
+  created: string;
+};
+
+export type DockerVolume = {
+  name: string;
+  driver: string;
+  size_bytes: number;
+  in_use: boolean;
+};
+
+export type DockerBuilderCache = {
+  total_bytes: number;
+  reclaimable_bytes: number;
+};
+
+export type DockerInventory = {
+  daemon_running: boolean;
+  images: DockerImage[];
+  containers: DockerContainer[];
+  volumes: DockerVolume[];
+  builder: DockerBuilderCache;
+  reclaimable_bytes: number;
+};
+
+export async function dockerAvailable(): Promise<boolean> {
+  return invoke("docker_available");
+}
+export async function dockerInventory(): Promise<DockerInventory> {
+  return invoke("docker_inventory");
+}
+export async function dockerRemoveImage(id: string): Promise<void> {
+  return invoke("docker_remove_image", { id });
+}
+export async function dockerRemoveContainer(id: string): Promise<void> {
+  return invoke("docker_remove_container", { id });
+}
+export async function dockerRemoveVolume(name: string): Promise<void> {
+  return invoke("docker_remove_volume", { name });
+}
+export async function dockerPruneAll(): Promise<string> {
+  return invoke("docker_prune_all");
+}
+
 // ========== Cache ==========
 
 export type CacheCategory =

@@ -1,5 +1,7 @@
+pub mod applications;
 pub mod cache_cleaner;
 pub mod cache_scanner;
+pub mod docker;
 pub mod monitor;
 pub mod ports;
 pub mod process_ops;
@@ -57,6 +59,62 @@ async fn scan_all(state: State<'_, AppState>) -> Result<ScanResult, String> {
 async fn list_all_processes(state: State<'_, AppState>) -> Result<Vec<scanner::ProcessRow>, String> {
     let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
     Ok(scanner::list_all(&mut sys))
+}
+
+// ========== 应用程序管理 ==========
+
+#[tauri::command]
+async fn list_applications(
+    state: State<'_, AppState>,
+) -> Result<Vec<applications::AppInfo>, String> {
+    let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
+    Ok(applications::list_running_apps(&mut sys))
+}
+
+#[tauri::command]
+async fn quit_application(name: String) -> Result<(), String> {
+    applications::graceful_quit_app(&name).await
+}
+
+#[tauri::command]
+async fn force_quit_application(pids: Vec<u32>) -> Result<Vec<(u32, String)>, String> {
+    let results = applications::force_quit_app(&pids);
+    Ok(results
+        .into_iter()
+        .map(|(pid, outcome)| (pid, outcome.message()))
+        .collect())
+}
+
+// ========== Docker 深度视图 ==========
+
+#[tauri::command]
+async fn docker_available() -> Result<bool, String> {
+    Ok(docker::is_available().await)
+}
+
+#[tauri::command]
+async fn docker_inventory() -> Result<docker::DockerInventory, String> {
+    docker::inventory().await
+}
+
+#[tauri::command]
+async fn docker_remove_image(id: String) -> Result<(), String> {
+    docker::remove_image(&id).await
+}
+
+#[tauri::command]
+async fn docker_remove_container(id: String) -> Result<(), String> {
+    docker::remove_container(&id).await
+}
+
+#[tauri::command]
+async fn docker_remove_volume(name: String) -> Result<(), String> {
+    docker::remove_volume(&name).await
+}
+
+#[tauri::command]
+async fn docker_prune_all() -> Result<String, String> {
+    docker::prune_all().await
 }
 
 #[derive(Serialize)]
@@ -242,6 +300,15 @@ pub fn run() {
             get_whitelist,
             add_whitelist,
             remove_whitelist,
+            list_applications,
+            quit_application,
+            force_quit_application,
+            docker_available,
+            docker_inventory,
+            docker_remove_image,
+            docker_remove_container,
+            docker_remove_volume,
+            docker_prune_all,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

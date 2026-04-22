@@ -25,7 +25,9 @@ export const zhCN = {
   nav: {
     scan: "智能扫描",
     process: "进程管理",
+    applications: "应用程序",
     cache: "缓存清理",
+    docker: "Docker",
     history: "历史记录",
     settings: "设置",
   },

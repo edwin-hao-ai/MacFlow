@@ -24,7 +24,9 @@ export const en: Dict = {
   nav: {
     scan: "Smart Scan",
     process: "Processes",
+    applications: "Applications",
     cache: "Cache",
+    docker: "Docker",
     history: "History",
     settings: "Settings",
   },

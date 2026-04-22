@@ -337,6 +337,62 @@ $ macflow
 
 ---
 
+### 3.8 应用程序管理模块（新增 2026-04-22）
+
+#### 3.8.1 功能描述
+macOS 的进程和应用是分离的：Chrome「一个应用」对应 20+ 个进程。
+本模块按 `.app` bundle 聚合进程，展示用户视角的「运行中的应用」，
+解决活动监视器里 Chrome Helper 刷屏看不懂是哪个应用的痛点。
+
+#### 3.8.2 核心能力
+- 按 bundle path 分组进程（main + 所有 Helper）
+- 每个应用卡片显示：图标占位 / 名称 / Bundle ID / 总内存 / 总 CPU /
+  进程数 / 运行时长 / 监听端口
+- 读 Info.plist 拿 `CFBundleDisplayName` / `CFBundleIdentifier`
+- 两个操作：
+  - **退出**：`osascript -e 'tell application "X" to quit'`
+    触发 macOS 标准退出流程（保存未存文件提示等）
+  - **强制退出**：对所有相关 PID 调 graceful_kill（走进程树清理）
+- 筛选：搜索 + 「隐藏系统应用」开关（默认开）
+- 5 秒自动刷新
+
+#### 3.8.3 技术实现
+- `src-tauri/src/applications.rs`：AppInfo 结构 + list_running_apps
+- 用 sysinfo 扫进程 → 按 `find_app_bundle` 提取 `.app` 路径分组
+- Info.plist 仅解析 XML 格式（bplist 不解析，回退到路径推断）
+
+---
+
+### 3.9 Docker 深度视图（新增 2026-04-22）
+
+#### 3.9.1 功能描述
+独立于缓存清理的批量模式，Docker 视图提供**细粒度的镜像/容器/卷管理**，
+像 Docker Desktop 自带界面一样但更轻。
+
+#### 3.9.2 核心能力
+顶部概览栏：可回收大小 / 镜像数（含悬空数） / 容器数（含停止数） /
+卷数（含未引用数） / 构建缓存总大小 / 「一键回收所有」按钮。
+
+三个 tab：
+- **镜像**：id / repo:tag / 大小 / 创建时间 / 悬空标记 / 使用中标记 / 删除按钮
+- **容器**：id / name / image / 状态 / 运行中/已停止 / RW 层大小 / 删除按钮
+- **卷**：name / driver / 使用中标记 / 删除按钮（仅未使用可删）
+
+操作：
+- 单项删除：`docker image rm -f ID` / `docker rm -f ID` / `docker volume rm -f NAME`
+- 一键回收：`docker system prune -f --volumes`（含二次确认对话框）
+
+未运行时显示「Docker 未运行或未安装」。
+
+#### 3.9.3 技术实现
+- `src-tauri/src/docker.rs`：统一经 `docker` CLI，结构化 Go template 输出
+- 独立探测 daemon：`docker info --format {{.ServerVersion}}`
+- 容器使用中判定：ps 输出 Image 列交集
+- 卷使用中判定：解析 ps --format {{.Mounts}}
+- 镜像 in_use：比对容器的 image tag 和 digest
+
+---
+
 ### 3.7 设置模块（优先级：低）
 
 #### 3.7.1 核心设置项
@@ -488,6 +544,34 @@ CLEANING: 完成         [==========] 100% | 清理完成
 
 ## 启动指令
 现在请基于本 PRD 开始生成 MacFlow v1.0 的代码，先从里程碑 1 的项目初始化和核心主界面开始。每完成一个模块，先更新本 PRD 对应部分的内容，再输出代码。遇到任何不确定的问题，先执行 web search 获取最新信息，再给出你的建议和实现方案。
+
+---
+
+# 九、实现进度增量记录（2026-04-22）
+
+## 9.1 新增模块（在 PRD 基础上）
+- §3.8 **应用程序管理视图** — 按 `.app` bundle 聚合进程，CleanMyMac 风卡片网格
+- §3.9 **Docker 深度视图** — 镜像/容器/卷细粒度管理，补 PRD §3.3 缓存批量清理的缺口
+- **端口占用筛选**（进程管理页）— 快速定位占用 3000/8080 等端口的进程
+- **托盘实时 CPU%**（title 动态文字）+ 菜单项实时显示各维度百分比
+- **「一键优化」托盘快捷** — 不打开窗口即可触发全量清理
+- **首次启动欢迎页** — 三大能力介绍
+- **国际化双语** — 中文/English，自动跟随系统
+- **Tauri Updater 自动更新** — minisign 签名 + 静态 manifest 端点
+
+## 9.2 进程 kill 的 supervisor 重启识别
+- `KillOutcome::RespawnedAs { new_pid, name }` —— kill 后按 name+exe 探 2 秒，
+  出现同名新 PID 即判定为 supervisor 重启，明确告知用户「从 launchd/pm2/nvm/Cursor
+  上游停止，或加入白名单屏蔽」
+
+## 9.3 PRD §3.3 剩余缺口（本轮未做）
+- [ ] 6 个月闲置 node_modules 扫描
+- [ ] 3 个月未使用 Docker 镜像（纯 prune 已做，时间筛选待加）
+
+## 9.4 CLI 命令补齐（未做）
+PRD §3.4.2 列了 --process / --docker / --npm / --auto / --list / --whitelist /
+--history / --rollback 等命令，目前 CLI 只实现 --scan / --cache / --version /
+--help。桌面端所有能力通过 CLI 暴露还是下一版的事。
 
 ---
 
