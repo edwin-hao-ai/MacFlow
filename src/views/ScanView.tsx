@@ -49,18 +49,27 @@ const ScanView: Component = () => {
     }
   };
 
-  let unlisten: UnlistenFn | undefined;
+  let unlistenHealth: UnlistenFn | undefined;
+  let unlistenOptimize: UnlistenFn | undefined;
   onMount(async () => {
     if (!showWelcome()) {
       await runScan();
     }
-    unlisten = await listen<SystemHealth>("health:update", (e) => {
+    unlistenHealth = await listen<SystemHealth>("health:update", (e) => {
       const r = result();
       if (!r) return;
       setResult({ ...r, health: e.payload });
     });
+    // 托盘「一键优化」菜单触发
+    unlistenOptimize = await listen<void>("tray:optimize", async () => {
+      await runScan();
+      await optimize();
+    });
   });
-  onCleanup(() => unlisten?.());
+  onCleanup(() => {
+    unlistenHealth?.();
+    unlistenOptimize?.();
+  });
 
   const handleStart = async () => {
     localStorage.setItem(WELCOME_SEEN_KEY, "true");

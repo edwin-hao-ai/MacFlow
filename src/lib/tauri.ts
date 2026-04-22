@@ -46,6 +46,27 @@ export async function killProcesses(
   return invoke("kill_processes", { pids, names });
 }
 
+// ========== 进程管理视图 ==========
+
+export type ProcessRow = {
+  pid: number;
+  parent_pid: number | null;
+  name: string;
+  exe: string;
+  cpu_percent: number;
+  memory_mb: number;
+  uptime_secs: number;
+  status: string;
+  ports: number[];
+  protected: boolean;
+  protected_reason: string | null;
+  whitelisted: boolean;
+};
+
+export async function listAllProcesses(): Promise<ProcessRow[]> {
+  return invoke("list_all_processes");
+}
+
 // ========== Cache ==========
 
 export type CacheCategory =

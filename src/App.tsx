@@ -4,7 +4,7 @@ import ScanView from "@/views/ScanView";
 import CacheView from "@/views/CacheView";
 import HistoryView from "@/views/HistoryView";
 import SettingsView from "@/views/SettingsView";
-import Placeholder from "@/views/Placeholder";
+import ProcessView from "@/views/ProcessView";
 import { listen } from "@tauri-apps/api/event";
 import { useI18n } from "@/i18n";
 
@@ -33,10 +33,7 @@ const App: Component = () => {
               <ScanView />
             </Match>
             <Match when={view() === "process"}>
-              <Placeholder
-                title={t("placeholder.processTitle")}
-                desc={t("placeholder.processDesc")}
-              />
+              <ProcessView />
             </Match>
             <Match when={view() === "cache"}>
               <CacheView />

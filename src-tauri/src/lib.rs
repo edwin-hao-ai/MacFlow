@@ -51,6 +51,14 @@ async fn scan_all(state: State<'_, AppState>) -> Result<ScanResult, String> {
     Ok(result)
 }
 
+/// 列出所有可见用户进程（不做分类过滤，用于进程管理页）。
+/// 与 scan_all 不同：返回全部，前端自己做展示/搜索/排序。
+#[tauri::command]
+async fn list_all_processes(state: State<'_, AppState>) -> Result<Vec<scanner::ProcessRow>, String> {
+    let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
+    Ok(scanner::list_all(&mut sys))
+}
+
 #[derive(Serialize)]
 pub struct KillReport {
     pub killed: Vec<u32>,
@@ -199,6 +207,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_system_health,
             scan_all,
+            list_all_processes,
             kill_processes,
             scan_cache,
             clean_cache,

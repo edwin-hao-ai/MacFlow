@@ -176,24 +176,112 @@ pub async fn clean(items: Vec<CacheItem>) -> CleanSummary {
 }
 
 async fn run_shell_command(cmd: &str) -> Result<(), String> {
-    // 把命令串拆成 args。这里要小心 shell 注入 ——
-    // 我们的命令都是写死在 scanner 里的常量，不是用户输入，所以安全。
+    // 命令都是写死在 scanner 里的常量，不是用户输入，所以 shell 注入安全。
     let parts: Vec<&str> = cmd.split_whitespace().collect();
     if parts.is_empty() {
         return Err("空命令".into());
     }
 
-    let output = tokio::process::Command::new(parts[0])
+    // 关键：Tauri GUI 启动时 macOS 只给了极短的默认 PATH（/usr/bin:/bin:/usr/sbin:/sbin），
+    // pip / brew / pnpm / docker 等工具根本找不到。需要：
+    // 1) 扩充 PATH 环境变量
+    // 2) 如果能定位到绝对路径则直接用绝对路径
+    let augmented_path = augmented_path_for_spawn();
+
+    // 用 which::which 在扩充后的 PATH 里找工具的绝对路径
+    let exe = match resolve_tool(parts[0], &augmented_path) {
+        Some(p) => p,
+        None => {
+            return Err(format!(
+                "找不到命令 `{}`，请确认已安装并在 PATH 中",
+                parts[0]
+            ))
+        }
+    };
+
+    let output = tokio::process::Command::new(&exe)
         .args(&parts[1..])
+        .env("PATH", &augmented_path)
         .output()
         .await
         .map_err(|e| format!("启动失败: {}", e))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(stderr.trim().to_string());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let msg = if !stderr.trim().is_empty() {
+            stderr.trim().to_string()
+        } else if !stdout.trim().is_empty() {
+            stdout.trim().to_string()
+        } else {
+            format!("命令退出码 {:?}", output.status.code())
+        };
+        return Err(msg);
     }
     Ok(())
+}
+
+/// 构造一个包含常见开发工具安装位置的 PATH，用于子进程 spawn。
+fn augmented_path_for_spawn() -> String {
+    let home = dirs::home_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default();
+
+    // 按优先级排：用户目录 → Homebrew → Apple silicon brew → 系统
+    let candidates = [
+        format!("{}/.cargo/bin", home),
+        format!("{}/.npm-global/bin", home),
+        format!("{}/.yarn/bin", home),
+        format!("{}/.bun/bin", home),
+        format!("{}/Library/pnpm", home),
+        format!("{}/Library/Python/3.9/bin", home),
+        format!("{}/Library/Python/3.10/bin", home),
+        format!("{}/Library/Python/3.11/bin", home),
+        format!("{}/Library/Python/3.12/bin", home),
+        format!("{}/Library/Python/3.13/bin", home),
+        format!("{}/anaconda3/bin", home),
+        format!("{}/miniconda3/bin", home),
+        format!("{}/.local/bin", home),
+        format!("{}/go/bin", home),
+        "/opt/homebrew/bin".to_string(), // Apple Silicon brew
+        "/opt/homebrew/sbin".to_string(),
+        "/usr/local/bin".to_string(), // Intel brew
+        "/usr/local/sbin".to_string(),
+        "/Library/Frameworks/Python.framework/Versions/3.13/bin".to_string(),
+        "/Library/Frameworks/Python.framework/Versions/3.12/bin".to_string(),
+        "/Library/Frameworks/Python.framework/Versions/3.11/bin".to_string(),
+        "/Library/Frameworks/Python.framework/Versions/3.10/bin".to_string(),
+        "/usr/bin".to_string(),
+        "/bin".to_string(),
+        "/usr/sbin".to_string(),
+        "/sbin".to_string(),
+    ];
+
+    // 保留环境里已有的 PATH 作为兜底
+    let existing = std::env::var("PATH").unwrap_or_default();
+    let mut parts: Vec<String> = candidates.into_iter().collect();
+    if !existing.is_empty() {
+        parts.push(existing);
+    }
+    parts.join(":")
+}
+
+/// 在给定 PATH 下解析工具的绝对路径。
+fn resolve_tool(name: &str, path: &str) -> Option<PathBuf> {
+    // 临时设置 PATH 让 which crate 用
+    for dir in path.split(':') {
+        let p = PathBuf::from(dir).join(name);
+        if p.is_file() {
+            // 检查可执行
+            if let Ok(meta) = std::fs::metadata(&p) {
+                use std::os::unix::fs::PermissionsExt;
+                if meta.permissions().mode() & 0o111 != 0 {
+                    return Some(p);
+                }
+            }
+        }
+    }
+    None
 }
 
 async fn remove_directory(path: &Path) -> Result<(), String> {
