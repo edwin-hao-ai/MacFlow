@@ -538,6 +538,10 @@
 
     <!-- 小型 JSX-less 组件渲染器 -->
     <script>
+      // ── i18n（必须在所有渲染器之前定义）──
+      const isChinese = navigator.language.toLowerCase().startsWith("zh");
+      document.documentElement.lang = isChinese ? "zh-CN" : "en";
+
       // Stat
       document.querySelectorAll("[data-stat]").forEach((el) => {
         const value = el.getAttribute("value");
@@ -580,19 +584,7 @@
           </div>
         </li>`;
       });
-      // CodeLine
-      document.querySelectorAll("[data-code]").forEach((el) => {
-        const cmd = el.getAttribute("cmd");
-        const i18nDesc = el.getAttribute("data-i18n-desc");
-        const desc = i18nDesc ? (i18n[i18nDesc] || el.getAttribute("desc") || "") : (el.getAttribute("desc") || "");
-        el.outerHTML = `<div class="flex items-center gap-4 p-3 rounded-lg bg-black/5 dark:bg-white/5">
-          <code class="code text-brand-700 dark:text-brand-300 font-semibold">${cmd}</code>
-          <span class="text-sm text-zinc-500 ml-auto">${desc}</span>
-        </div>`;
-      });
-
-      // i18n strings — defined first so CodeLine renderer can use them
-      const isChinese = navigator.language.toLowerCase().startsWith("zh");
+      // i18n strings
       const i18n = isChinese ? {
         faqBadge: "常见问题",
         faqTitle: "你可能想问",
@@ -685,6 +677,17 @@
       document.querySelectorAll("[data-i18n]").forEach((el) => {
         const key = el.getAttribute("data-i18n");
         if (i18n[key]) el.textContent = i18n[key];
+      });
+
+      // CodeLine (after i18n is defined)
+      document.querySelectorAll("[data-code]").forEach((el) => {
+        const cmd = el.getAttribute("cmd");
+        const i18nDesc = el.getAttribute("data-i18n-desc");
+        const desc = i18nDesc ? (i18n[i18nDesc] || el.getAttribute("desc") || "") : (el.getAttribute("desc") || "");
+        el.outerHTML = `<div class="flex items-center gap-4 p-3 rounded-lg bg-black/5 dark:bg-white/5">
+          <code class="code text-brand-700 dark:text-brand-300 font-semibold">${cmd}</code>
+          <span class="text-sm text-zinc-500 ml-auto">${desc}</span>
+        </div>`;
       });
 
       // Render FAQ
