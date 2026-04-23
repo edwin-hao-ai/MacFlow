@@ -319,7 +319,7 @@
       <!-- Features -->
       <section id="features" class="max-w-6xl mx-auto px-5 py-20">
         <div class="text-center mb-14">
-          <span class="badge">功能</span>
+          <span class="badge" data-i18n="featuresBadge">Features</span>
           <h2 class="text-3xl md:text-4xl font-bold mt-3 tracking-tight">
             Everything your Mac needs. Nothing it doesn't.
           </h2>
@@ -386,7 +386,7 @@
           </div>
           <div>
             <div class="terminal">
-              <div class="comment">// 安全单元测试（7/7 passed）</div>
+              <div class="comment">// Safety unit tests (7/7 passed)</div>
               <div>
                 <span class="prompt">$</span> cargo test --lib cache_cleaner
               </div>
@@ -444,35 +444,34 @@
                 ==========================================
               </div>
               <div>
-                系统状态: CPU
-                <span class="highlight">27.6%</span> 内存
-                <span class="highlight">75.1%</span> 磁盘
+                System: CPU
+                <span class="highlight">27.6%</span> Mem
+                <span class="highlight">75.1%</span> Disk
                 <span class="highlight">82.5%</span>
               </div>
-              <div class="muted">扫描开发者缓存...</div>
+              <div class="muted">Scanning developer caches...</div>
               <div>&nbsp;</div>
-              <div>发现 7 项可优化内容，共计 <span class="highlight">4.78 GB</span></div>
+              <div>Found 7 items, total <span class="highlight">4.78 GB</span> reclaimable</div>
               <div class="muted">------------------------------------------</div>
-              <div>[*] &nbsp;&nbsp;2720 MB&nbsp;&nbsp;NPM 全局缓存</div>
-              <div>[*] &nbsp;&nbsp;&nbsp;867 MB&nbsp;&nbsp;Pip 缓存</div>
+              <div>[*] &nbsp;&nbsp;2720 MB&nbsp;&nbsp;NPM cache</div>
+              <div>[*] &nbsp;&nbsp;&nbsp;867 MB&nbsp;&nbsp;Pip cache</div>
               <div>[*] &nbsp;&nbsp;&nbsp;718 MB&nbsp;&nbsp;PNPM Store</div>
-              <div>[*] &nbsp;&nbsp;&nbsp;277 MB&nbsp;&nbsp;Homebrew 旧包缓存</div>
-              <div>[*] &nbsp;&nbsp;&nbsp;162 MB&nbsp;&nbsp;Cargo 注册表缓存</div>
-              <div>[*] &nbsp;&nbsp;&nbsp;152 MB&nbsp;&nbsp;Yarn 全局缓存</div>
+              <div>[*] &nbsp;&nbsp;&nbsp;277 MB&nbsp;&nbsp;Homebrew bottles</div>
+              <div>[*] &nbsp;&nbsp;&nbsp;162 MB&nbsp;&nbsp;Cargo registry</div>
+              <div>[*] &nbsp;&nbsp;&nbsp;152 MB&nbsp;&nbsp;Yarn cache</div>
             </div>
           </div>
           <div class="order-1 md:order-2">
-            <span class="badge">开发者模式</span>
-            <h2 class="text-3xl md:text-4xl font-bold mt-3 tracking-tight">
-              CLI 和桌面端共享核心
+            <span class="badge" data-i18n="cliBadge">Developer Mode</span>
+            <h2 class="text-3xl md:text-4xl font-bold mt-3 tracking-tight" data-i18n="cliTitle">
+              CLI and desktop share the same core
             </h2>
-            <p class="mt-4 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              不想打开窗口？一条命令搞定。macflow-cli 是和 GUI 共用一套 Rust
-              核心的独立二进制，同样 6.6 MB。
+            <p class="mt-4 text-zinc-600 dark:text-zinc-400 leading-relaxed" data-i18n="cliDesc">
+              Don't want to open a window? One command does it. macflow-cli is a standalone binary sharing the same Rust core as the GUI.
             </p>
             <div class="mt-6 space-y-2">
-              <div data-code cmd="macflow-cli --scan" desc="扫描，不执行清理"></div>
-              <div data-code cmd="macflow-cli --cache" desc="扫描并清理所有安全项"></div>
+              <div data-code cmd="macflow-cli --scan" data-i18n-desc="cliScan"></div>
+              <div data-code cmd="macflow-cli --cache" data-i18n-desc="cliCache"></div>
               <div data-code cmd="macflow-cli --help" desc="完整帮助"></div>
             </div>
           </div>
@@ -522,37 +521,12 @@
         class="max-w-3xl mx-auto px-5 py-20 border-t border-black/5 dark:border-white/5"
       >
         <div class="text-center mb-10">
-          <span class="badge">常见问题</span>
-          <h2 class="text-3xl md:text-4xl font-bold mt-3 tracking-tight">
-            你可能想问
+          <span class="badge" data-i18n="faqBadge">FAQ</span>
+          <h2 class="text-3xl md:text-4xl font-bold mt-3 tracking-tight" data-i18n="faqTitle">
+            You might be wondering
           </h2>
         </div>
-        <div class="space-y-4" id="faq-list">
-          <div data-faq
-            q="会不会误删我正在用的项目缓存？"
-            a="不会。MacFlow 在扫描前会检测 npm / pnpm / yarn / docker build / xcodebuild / cargo build / go / pip 是否正在运行。只要检测到有一个在跑，对应的缓存完全不会出现在清理列表里。此外，所有直接删除操作都必须命中硬编码的路径白名单（~/.npm、~/Library/Caches/Homebrew 等），不会碰 /、$HOME、~/Documents 这些危险路径。"
-          ></div>
-          <div data-faq
-            q="为什么比 CleanMyMac 小那么多？"
-            a="CleanMyMac 基于 Electron 或大型 UI 框架，捆绑了 Chromium 运行时、上百个 MB 的界面资源。MacFlow 用 Rust + SolidJS + Tauri 的组合，编译产物 6.6 MB，界面部分只有 97 KB（gzip 后 28 KB）。架构选择不同而已。"
-          ></div>
-          <div data-faq
-            q="为什么没有 AI？"
-            a="因为不需要。分类和风险判断的规则很明确：npm cache clean 就是 NPM 官方安全命令，docker image prune 就是只删无 tag 的镜像。用 AI 既增加了 API 成本（会毁掉轻量定价），也增加了隐私顾虑（缓存内容被上传到哪），对规则能搞定的事是过度工程。"
-          ></div>
-          <div data-faq
-            q="免费版有什么限制？"
-            a="手动清理完全无限制。Pro 版在规划中，收费的是「持续价值」功能：自动监控、定时清理、Docker 3 个月未用镜像清理、多设备白名单同步 —— 都是需要持续运行的能力。一次性清理永远免费。"
-          ></div>
-          <div data-faq
-            q="操作可以撤销吗？"
-            a="老实说：NPM / Docker / Homebrew 的缓存清理本质不可逆。MacFlow 不承诺「一键回滚」，而是提供「操作日志 + 重新获取指引」—— 清理后显示如何重新下载需要的包。真正可撤销的是白名单变更、设置变更。"
-          ></div>
-          <div data-faq
-            q="会收集数据吗？"
-            a="不会。没有后端，没有 telemetry，没有崩溃上报。所有数据存在 ~/Library/Application Support/MacFlow/macflow.db，完全离线工作。可以用 Little Snitch 验证：打开 MacFlow 后唯一的网络请求是 Apple 官方的代码签名检查。"
-          ></div>
-        </div>
+        <div class="space-y-4" id="faq-list"></div>
       </section>
     </main>
 
@@ -622,24 +596,73 @@
       // CodeLine
       document.querySelectorAll("[data-code]").forEach((el) => {
         const cmd = el.getAttribute("cmd");
-        const desc = el.getAttribute("desc");
+        const i18nDesc = el.getAttribute("data-i18n-desc");
+        const desc = i18nDesc ? (i18n[i18nDesc] || el.getAttribute("desc") || "") : (el.getAttribute("desc") || "");
         el.outerHTML = `<div class="flex items-center gap-4 p-3 rounded-lg bg-black/5 dark:bg-white/5">
           <code class="code text-brand-700 dark:text-brand-300 font-semibold">${cmd}</code>
           <span class="text-sm text-zinc-500 ml-auto">${desc}</span>
         </div>`;
       });
-      // FAQItem
-      document.querySelectorAll("[data-faq]").forEach((el) => {
-        const q = el.getAttribute("q");
-        const a = el.getAttribute("a");
-        el.outerHTML = `<details class="card p-5 group">
-          <summary class="cursor-pointer flex items-center justify-between gap-4 font-medium">
-            <span>${q}</span>
-            <svg class="w-5 h-5 text-zinc-400 group-open:rotate-180 transition-transform flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </summary>
-          <p class="mt-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">${a}</p>
-        </details>`;
+
+      // i18n strings
+      const isChinese = navigator.language.toLowerCase().startsWith("zh");
+      const i18n = isChinese ? {
+        faqBadge: "常见问题",
+        faqTitle: "你可能想问",
+        featuresBadge: "功能",
+        cliBadge: "开发者模式",
+        cliTitle: "CLI 和桌面端共享核心",
+        cliDesc: "不想打开窗口？一条命令搞定。macflow-cli 是和 GUI 共用一套 Rust 核心的独立二进制。",
+        cliScan: "扫描，不执行清理",
+        cliCache: "扫描并清理所有安全项",
+        cliHelp: "完整帮助",
+        faqs: [
+          { q: "会不会误删我正在用的项目缓存？", a: "不会。MacFlow 在扫描前会检测 npm / pnpm / yarn / docker build / xcodebuild / cargo build / go / pip 是否正在运行。只要检测到有一个在跑，对应的缓存完全不会出现在清理列表里。此外，所有直接删除操作都必须命中硬编码的路径白名单，不会碰 /、$HOME、~/Documents 这些危险路径。" },
+          { q: "为什么比 CleanMyMac 小那么多？", a: "CleanMyMac 基于 Electron，捆绑了 Chromium 运行时。MacFlow 用 Rust + SolidJS + Tauri，编译产物约 12 MB，界面部分只有 130 KB（gzip 后 40 KB）。架构选择不同而已。" },
+          { q: "为什么没有 AI？", a: "因为不需要。分类和风险判断的规则很明确：npm cache clean 就是 NPM 官方安全命令，docker image prune 就是只删无 tag 的镜像。用 AI 既增加了 API 成本，也增加了隐私顾虑，对规则能搞定的事是过度工程。" },
+          { q: "免费版有什么限制？", a: "手动清理完全无限制。Pro 版在规划中，收费的是「持续价值」功能：自动监控、定时清理、多设备白名单同步。一次性清理永远免费。" },
+          { q: "操作可以撤销吗？", a: "NPM / Docker / Homebrew 的缓存清理本质不可逆。MacFlow 不承诺「一键回滚」，而是提供操作日志，清理后显示如何重新下载需要的包。" },
+          { q: "会收集数据吗？", a: "不会。没有后端，没有 telemetry，没有崩溃上报。所有数据存在 ~/Library/Application Support/MacFlow/macflow.db，完全离线工作。" },
+        ]
+      } : {
+        faqBadge: "FAQ",
+        faqTitle: "You might be wondering",
+        featuresBadge: "Features",
+        cliBadge: "Developer Mode",
+        cliTitle: "CLI and desktop share the same core",
+        cliDesc: "Don't want to open a window? One command does it. macflow-cli is a standalone binary sharing the same Rust core as the GUI.",
+        cliScan: "Scan only, no changes",
+        cliCache: "Scan and clean all safe items",
+        cliHelp: "Full help",
+        faqs: [
+          { q: "Will it accidentally delete files I need?", a: "No. MacFlow checks whether npm, pnpm, yarn, docker build, xcodebuild, cargo, go, or pip is running before scanning. If any of them are active, their caches won't appear in the list at all. All deletions are also checked against a hardcoded path allowlist — /, $HOME, and ~/Documents can never be deleted." },
+          { q: "Why is it so much smaller than CleanMyMac?", a: "CleanMyMac bundles Electron and Chromium. MacFlow uses Rust + SolidJS + Tauri — the compiled binary is ~12 MB and the UI is 130 KB (40 KB gzipped). It's an architecture choice." },
+          { q: "Why no AI?", a: "Because it's not needed. The rules are clear: npm cache clean is the official NPM command, docker image prune only removes untagged images. Adding AI would increase API costs, raise privacy concerns, and over-engineer something rules handle perfectly." },
+          { q: "What are the limits of the free version?", a: "Manual cleanup is completely unlimited. Pro features (planned) are about continuous value: auto-monitoring, scheduled cleanup, multi-device whitelist sync. One-time cleanup is always free." },
+          { q: "Can I undo a cleanup?", a: "NPM / Docker / Homebrew cache cleanup is irreversible by nature. MacFlow doesn't promise one-click rollback — instead it provides an operation log and shows you how to re-download what you need." },
+          { q: "Does it collect any data?", a: "No. No backend, no telemetry, no crash reporting. All data lives in ~/Library/Application Support/MacFlow/macflow.db and works completely offline." },
+        ]
+      };
+
+      // Apply i18n to data-i18n elements
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        if (i18n[key]) el.textContent = i18n[key];
       });
+
+      // Render FAQ
+      const faqList = document.getElementById("faq-list");
+      if (faqList) {
+        faqList.innerHTML = i18n.faqs.map(({ q, a }) => `
+          <details class="card p-5 group">
+            <summary class="cursor-pointer flex items-center justify-between gap-4 font-medium">
+              <span>${q}</span>
+              <svg class="w-5 h-5 text-zinc-400 group-open:rotate-180 transition-transform flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <p class="mt-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">${a}</p>
+          </details>
+        `).join("");
+      }
     </script>
   </body>
 </html>
