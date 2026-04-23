@@ -239,8 +239,8 @@
           <a href="https://github.com/edwin-hao-ai/MacFlow" class="hover:text-zinc-900 dark:hover:text-zinc-100">GitHub</a>
         </div>
         <div class="flex items-center gap-3">
-          <button id="lang-toggle" onclick="toggleLang()" class="text-xs px-2 py-1 rounded-md border border-black/10 dark:border-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer">
-            EN / 中
+          <button id="lang-toggle" onclick="toggleLang()" class="text-xs px-2.5 py-1 rounded-md border border-black/10 dark:border-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer select-none">
+            🌐
           </button>
           <a href="https://github.com/edwin-hao-ai/MacFlow/releases/latest/download/MacFlow_0.1.0_aarch64.dmg" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" id="nav-download">
             Download
@@ -260,22 +260,13 @@
               v0.1.0 · Free · No subscription
             </span>
           </div>
-          <h1
-            class="text-center text-4xl md:text-6xl font-bold tracking-tight"
-          >
-            <span
-              class="bg-gradient-to-br from-brand-500 to-brand-700 bg-clip-text text-transparent"
-              >Keep your Mac fast.</span
-            >
+          <h1 class="text-center text-4xl md:text-6xl font-bold tracking-tight">
+            <span class="bg-gradient-to-br from-brand-500 to-brand-700 bg-clip-text text-transparent" data-i18n="heroTitle1">Keep your Mac fast.</span>
             <br />
-            <span>Without the bloat.</span>
+            <span data-i18n="heroTitle2">Without the bloat.</span>
           </h1>
-          <p
-            class="mt-6 text-center text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto"
-          >
-            One-click cleanup for app caches, junk files, and developer tools.
-            <br class="hidden md:inline" />
-            Built with Rust + Tauri. Not Electron. <b>~12 MB</b> total.
+          <p class="mt-6 text-center text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto" data-i18n="heroDesc">
+            One-click cleanup for app caches, junk files, and developer tools. Built with Rust + Tauri. Not Electron. ~12 MB total.
           </p>
           <div class="mt-10 flex flex-wrap justify-center gap-3">
             <a href="https://github.com/edwin-hao-ai/MacFlow/releases/latest/download/MacFlow_0.1.0_aarch64.dmg" class="btn-primary" id="hero-download">
@@ -603,6 +594,7 @@
       });
       // i18n strings
       const i18n = isChinese ? {
+        heroTitle1: "让你的 Mac 保持飞快", heroTitle2: "不臃肿，不多余", heroDesc: "一键清理应用缓存、垃圾文件和开发工具缓存。Rust + Tauri 构建，不是 Electron。总共约 12 MB。",
         faqBadge: "常见问题", faqTitle: "你可能想问",
         featuresBadge: "功能", featuresTitle: "你的 Mac 需要的一切，不多不少", featuresSubtitle: "没有 AI，没有订阅陷阱。打开就能用，关了就能走。",
         feat1Title: "系统缓存清理", feat1Desc: "按应用逐个扫描缓存——清楚看到哪个应用占了多少空间。同时清理日志、崩溃报告和废纸篓。典型释放空间：2–8 GB。",
@@ -629,6 +621,7 @@
           { q: "会收集数据吗？", a: "不会。没有后端，没有 telemetry，没有崩溃上报。所有数据存在本地 SQLite 数据库，完全离线工作。" },
         ]
       } : {
+        heroTitle1: "Keep your Mac fast.", heroTitle2: "Without the bloat.", heroDesc: "One-click cleanup for app caches, junk files, and developer tools. Built with Rust + Tauri. Not Electron. ~12 MB total.",
         faqBadge: "FAQ", faqTitle: "You might be wondering",
         featuresBadge: "Features", featuresTitle: "Everything your Mac needs. Nothing it doesn't.", featuresSubtitle: "No AI. No subscription traps. Open, clean, done.",
         feat1Title: "System Cache Cleanup", feat1Desc: "Scans every app's cache individually — see exactly which app is hoarding space. Also cleans logs, crash reports, and Trash. Typical savings: 2–8 GB.",
@@ -656,17 +649,16 @@
         ]
       };
 
-      // Language toggle function
+      // Language toggle function (must be global for onclick)
       function toggleLang() {
         const url = new URL(window.location);
         const current = url.searchParams.get("lang");
-        if (current === "en") {
-          url.searchParams.delete("lang");
-        } else if (current === "zh") {
+        if (isChinese && !current) {
           url.searchParams.set("lang", "en");
+        } else if (!isChinese && !current) {
+          url.searchParams.set("lang", "zh");
         } else {
-          // Auto mode: toggle to opposite of detected
-          url.searchParams.set("lang", isChinese ? "en" : "zh");
+          url.searchParams.delete("lang");
         }
         window.location = url;
       }
@@ -676,6 +668,10 @@
         const key = el.getAttribute("data-i18n");
         if (i18n[key]) el.textContent = i18n[key];
       });
+
+      // Update lang toggle button text
+      const langBtn = document.getElementById("lang-toggle");
+      if (langBtn) langBtn.textContent = isChinese ? "EN" : "中文";
 
       // CodeLine (after i18n is defined)
       document.querySelectorAll("[data-code]").forEach((el) => {
