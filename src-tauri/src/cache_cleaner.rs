@@ -12,16 +12,15 @@ fn allowed_cleanup_roots() -> Vec<PathBuf> {
         // 只允许这几个非常具体的缓存子路径
         out.push(home.join(".npm"));
         out.push(home.join(".cargo/registry/cache"));
+        out.push(home.join(".Trash"));
         out.push(home.join("Library/pnpm/store"));
-        out.push(home.join("Library/Caches/Yarn"));
-        out.push(home.join("Library/Caches/Homebrew"));
-        out.push(home.join("Library/Caches/CocoaPods"));
-        out.push(home.join("Library/Caches/pip"));
-        out.push(home.join("Library/Caches/go-build"));
+        out.push(home.join("Library/Caches")); // 覆盖所有应用缓存子目录
+        out.push(home.join("Library/Logs")); // 应用日志
         out.push(home.join("Library/Developer/Xcode/DerivedData"));
         out.push(home.join("Library/Developer/Xcode/Archives"));
         out.push(home.join("Library/Developer/Xcode/iOS DeviceSupport"));
         out.push(home.join("Library/Developer/CoreSimulator/Caches"));
+        out.push(home.join("Library/Application Support/CrashReporter"));
     }
     out.push(PathBuf::from("/opt/homebrew/Library/Homebrew/cache"));
     out
@@ -133,18 +132,51 @@ pub async fn clean(items: Vec<CacheItem>) -> CleanSummary {
         } else if item.command.as_deref() == Some("__PIP_CLEAN__") {
             // Pip 缓存清理特殊处理：绕开坏 shebang 的 pip 脚本
             clean_pip_cache(&item).await
+        } else if let Some(cmd) = item
+            .command
+            .as_deref()
+            .and_then(|s| s.strip_prefix("__STALE_NODE_MODULES_CLEAN__:"))
+        {
+            clean_stale_node_modules(cmd).await
         } else if let Some(cmd) = &item.command {
-            run_shell_command(cmd).await
+            // npm / pnpm / yarn 特殊处理：命令失败时回退到直接删目录
+            // 原因：nvm 管理的 npm 需要 nvm 初始化才能激活，login shell 不一定能找到
+            let fallback_ids = ["npm-cache", "pnpm-store", "yarn-cache"];
+            let cmd_result = run_shell_command(cmd).await;
+            if cmd_result.is_err() && fallback_ids.contains(&item.id.as_str()) {
+                if let Some(path) = &item.path {
+                    let p = expand_tilde(path);
+                    if is_cleanup_path_allowed(&p) {
+                        remove_directory(&p).await
+                    } else {
+                        cmd_result
+                    }
+                } else {
+                    cmd_result
+                }
+            } else {
+                cmd_result
+            }
         } else if let Some(path) = &item.path {
             let p = expand_tilde(path);
-            // 路径白名单防御：绝不删任何非预期目录
             if !is_cleanup_path_allowed(&p) {
                 Err(format!(
                     "路径不在白名单内，拒绝删除: {}",
                     p.display()
                 ))
             } else {
-                remove_directory(&p).await
+                // 检查是否是 root 所有的目录，需要 sudo
+                let needs_sudo = p.metadata()
+                    .map(|m| {
+                        use std::os::unix::fs::MetadataExt;
+                        m.uid() == 0
+                    })
+                    .unwrap_or(false);
+                if needs_sudo {
+                    remove_directory_sudo(&p).await
+                } else {
+                    remove_directory(&p).await
+                }
             }
         } else {
             Err("既无命令也无路径".into())
@@ -268,6 +300,100 @@ async fn clean_pip_cache(item: &CacheItem) -> Result<(), String> {
     ))
 }
 
+/// 6 个月未访问 node_modules 的实际清理：重新扫描目录 + 移动到 /tmp
+async fn clean_stale_node_modules(home_str: &str) -> Result<(), String> {
+    let home = std::path::PathBuf::from(home_str);
+    let project_roots = [
+        "Projects",
+        "projects",
+        "Code",
+        "code",
+        "Developer",
+        "developer",
+        "workspace",
+        "repos",
+        "Repos",
+        "git",
+        "src",
+        "Desktop",
+        "Documents",
+    ];
+
+    let cutoff = std::time::SystemTime::now()
+        .checked_sub(std::time::Duration::from_secs(180 * 24 * 3600))
+        .unwrap_or(std::time::UNIX_EPOCH);
+
+    // 在 blocking task 里扫描 + 清理
+    let home_clone = home.clone();
+    tokio::task::spawn_blocking(move || -> Result<(), String> {
+        let mut cleaned = 0u32;
+        let mut errors: Vec<String> = Vec::new();
+
+        for root in project_roots {
+            let root_path = home_clone.join(root);
+            if !root_path.exists() {
+                continue;
+            }
+            let walker = walkdir::WalkDir::new(&root_path)
+                .max_depth(5)
+                .follow_links(false)
+                .into_iter()
+                .filter_entry(|e| {
+                    let name = e.file_name().to_string_lossy();
+                    !name.starts_with('.') && name != "node_modules" || e.depth() == 0
+                });
+            for entry in walker.filter_map(|e| e.ok()) {
+                if !entry.file_type().is_dir() {
+                    continue;
+                }
+                if entry.file_name() != "node_modules" {
+                    continue;
+                }
+                let Ok(meta) = entry.metadata() else { continue };
+                let accessed = meta.accessed().or_else(|_| meta.modified()).ok();
+                let Some(t) = accessed else { continue };
+                if t >= cutoff {
+                    continue;
+                }
+
+                // 移动到 /tmp
+                let ts = chrono::Utc::now().format("%Y%m%d-%H%M%S");
+                let parent_name = entry
+                    .path()
+                    .parent()
+                    .and_then(|p| p.file_name())
+                    .map(|s| s.to_string_lossy().to_string())
+                    .unwrap_or_else(|| "unknown".into());
+                let trash = std::env::temp_dir().join(format!(
+                    "macflow-nodemodules-{}-{}-{}",
+                    ts,
+                    parent_name,
+                    cleaned
+                ));
+                match std::fs::rename(entry.path(), &trash) {
+                    Ok(_) => {
+                        cleaned += 1;
+                        // 后台异步实际删除
+                        std::thread::spawn(move || {
+                            let _ = std::fs::remove_dir_all(&trash);
+                        });
+                    }
+                    Err(e) => {
+                        errors.push(format!("{}: {}", entry.path().display(), e));
+                    }
+                }
+            }
+        }
+
+        if cleaned == 0 && !errors.is_empty() {
+            return Err(errors.join("; "));
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|e| format!("扫描任务失败: {}", e))?
+}
+
 /// 检测用户使用的 shell。优先级：$SHELL > /bin/zsh > /bin/bash > /bin/sh
 fn detect_user_shell() -> String {
     if let Ok(s) = std::env::var("SHELL") {
@@ -330,7 +456,6 @@ async fn remove_directory(path: &Path) -> Result<(), String> {
     if !path.exists() {
         return Ok(());
     }
-    // 最后一道守门：再次校验白名单（防御 race condition / symlink swap）
     if !is_cleanup_path_allowed(path) {
         return Err(format!(
             "执行前二次校验失败，拒绝删除: {}",
@@ -338,8 +463,6 @@ async fn remove_directory(path: &Path) -> Result<(), String> {
         ));
     }
 
-    // 不直接删除 —— mv 到 /tmp 下一个标记目录
-    // 好处：① rename 是原子操作 ② 如果用户冷静后反悔，1 小时内 /tmp 还没被系统清理
     let timestamp = chrono::Utc::now().format("%Y%m%d-%H%M%S");
     let trash = std::env::temp_dir().join(format!(
         "macflow-trash-{}-{}",
@@ -351,15 +474,59 @@ async fn remove_directory(path: &Path) -> Result<(), String> {
 
     let path = path.to_path_buf();
     tokio::task::spawn_blocking(move || {
-        std::fs::rename(&path, &trash).map_err(|e| format!("移动失败: {}", e))?;
-        // rename 成功，立即把空间还给用户
-        std::thread::spawn(move || {
-            let _ = std::fs::remove_dir_all(&trash);
-        });
-        Ok::<(), String>(())
+        // 先尝试 rename（原子操作，快）
+        // 如果跨 volume 或权限不足，回退到逐文件删除
+        match std::fs::rename(&path, &trash) {
+            Ok(_) => {
+                std::thread::spawn(move || {
+                    let _ = std::fs::remove_dir_all(&trash);
+                });
+                Ok(())
+            }
+            Err(_) => {
+                // rename 失败 → 直接递归删除（不经过 /tmp）
+                std::fs::remove_dir_all(&path)
+                    .map_err(|e| format!("删除失败: {}", e))
+            }
+        }
     })
     .await
     .map_err(|e| format!("任务失败: {}", e))?
+}
+
+/// 用 osascript 弹出系统密码框，以 sudo 权限删除 root 所有的目录
+async fn remove_directory_sudo(path: &Path) -> Result<(), String> {
+    if !path.exists() {
+        return Ok(());
+    }
+    if !is_cleanup_path_allowed(path) {
+        return Err(format!("路径不在白名单内，拒绝删除: {}", path.display()));
+    }
+
+    let path_str = path.to_string_lossy().to_string();
+    // osascript 弹出系统原生密码框，用户授权后执行 sudo rm -rf
+    let script = format!(
+        r#"do shell script "rm -rf '{}'" with administrator privileges"#,
+        path_str.replace('\'', "'\\''")
+    );
+
+    let output = tokio::process::Command::new("osascript")
+        .args(["-e", &script])
+        .output()
+        .await
+        .map_err(|e| format!("osascript 启动失败: {}", e))?;
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        // 用户取消授权时 osascript 返回 "User canceled"
+        if stderr.contains("User canceled") || stderr.contains("(-128)") {
+            Err("用户取消了授权".into())
+        } else {
+            Err(format!("需要管理员权限才能删除此目录: {}", stderr.trim()))
+        }
+    }
 }
 
 /// 展开 ~ 为家目录。

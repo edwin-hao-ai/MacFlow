@@ -82,17 +82,34 @@ export async function listAllProcesses(): Promise<ProcessRow[]> {
 
 // ========== 应用程序管理 ==========
 
+export type AppChildProcess = {
+  pid: number;
+  parent_pid: number | null;
+  name: string;
+  memory_mb: number;
+  cpu_percent: number;
+  ports: number[];
+  is_main: boolean;
+  depth: number;
+  protected: boolean;
+  protected_reason: string | null;
+  whitelisted: boolean;
+};
+
 export type AppInfo = {
   bundle_path: string;
   name: string;
   bundle_id: string;
   main_pid: number;
   all_pids: number[];
+  children: AppChildProcess[];
   memory_mb: number;
   cpu_percent: number;
   uptime_secs: number;
   ports: number[];
   is_system: boolean;
+  protected_process_count: number;
+  whitelisted_process_count: number;
 };
 
 export async function listApplications(): Promise<AppInfo[]> {

@@ -1,4 +1,4 @@
-import { Component, createSignal, Match, onMount, Switch } from "solid-js";
+import { Component, createSignal, onMount } from "solid-js";
 import Sidebar, { type ViewId } from "@/components/Sidebar";
 import ScanView from "@/views/ScanView";
 import CacheView from "@/views/CacheView";
@@ -6,9 +6,18 @@ import HistoryView from "@/views/HistoryView";
 import SettingsView from "@/views/SettingsView";
 import ProcessView from "@/views/ProcessView";
 import ApplicationsView from "@/views/ApplicationsView";
-import DockerView from "@/views/DockerView";
 import { listen } from "@tauri-apps/api/event";
 import { useI18n } from "@/i18n";
+
+/** 用 CSS display 切换的 tab 面板，组件始终挂载不丢状态 */
+const TabPanel: Component<{ id: ViewId; active: ViewId; children: any }> = (props) => (
+  <div
+    class="h-full"
+    style={{ display: props.active === props.id ? "block" : "none" }}
+  >
+    {props.children}
+  </div>
+);
 
 const App: Component = () => {
   const { t } = useI18n();
@@ -30,29 +39,12 @@ const App: Component = () => {
           </h1>
         </div>
         <div class="flex-1 min-h-0 no-drag">
-          <Switch>
-            <Match when={view() === "scan"}>
-              <ScanView />
-            </Match>
-            <Match when={view() === "process"}>
-              <ProcessView />
-            </Match>
-            <Match when={view() === "applications"}>
-              <ApplicationsView />
-            </Match>
-            <Match when={view() === "cache"}>
-              <CacheView />
-            </Match>
-            <Match when={view() === "docker"}>
-              <DockerView />
-            </Match>
-            <Match when={view() === "history"}>
-              <HistoryView />
-            </Match>
-            <Match when={view() === "settings"}>
-              <SettingsView />
-            </Match>
-          </Switch>
+          <TabPanel id="scan" active={view()}><ScanView /></TabPanel>
+          <TabPanel id="process" active={view()}><ProcessView /></TabPanel>
+          <TabPanel id="applications" active={view()}><ApplicationsView /></TabPanel>
+          <TabPanel id="cache" active={view()}><CacheView /></TabPanel>
+          <TabPanel id="history" active={view()}><HistoryView /></TabPanel>
+          <TabPanel id="settings" active={view()}><SettingsView /></TabPanel>
         </div>
       </main>
     </div>

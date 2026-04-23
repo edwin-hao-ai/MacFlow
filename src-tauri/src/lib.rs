@@ -58,7 +58,15 @@ async fn scan_all(state: State<'_, AppState>) -> Result<ScanResult, String> {
 #[tauri::command]
 async fn list_all_processes(state: State<'_, AppState>) -> Result<Vec<scanner::ProcessRow>, String> {
     let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
-    Ok(scanner::list_all(&mut sys))
+    let mut rows = scanner::list_all(&mut sys);
+    for row in &mut rows {
+        if state.storage.is_whitelisted("process", &row.name) {
+            row.whitelisted = true;
+            row.protected = true;
+            row.protected_reason = Some("命中白名单，默认不建议终止".into());
+        }
+    }
+    Ok(rows)
 }
 
 // ========== 应用程序管理 ==========
@@ -68,7 +76,27 @@ async fn list_applications(
     state: State<'_, AppState>,
 ) -> Result<Vec<applications::AppInfo>, String> {
     let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
-    Ok(applications::list_running_apps(&mut sys))
+    let mut apps = applications::list_running_apps(&mut sys);
+    for app in &mut apps {
+        let mut protected_count = 0usize;
+        let mut whitelisted_count = 0usize;
+        for child in &mut app.children {
+            if state.storage.is_whitelisted("process", &child.name) {
+                child.whitelisted = true;
+                child.protected = true;
+                child.protected_reason = Some("命中白名单，默认不建议终止".into());
+            }
+            if child.protected {
+                protected_count += 1;
+            }
+            if child.whitelisted {
+                whitelisted_count += 1;
+            }
+        }
+        app.protected_process_count = protected_count;
+        app.whitelisted_process_count = whitelisted_count;
+    }
+    Ok(apps)
 }
 
 #[tauri::command]

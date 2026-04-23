@@ -1,17 +1,48 @@
-
 # Editor
-# Logs
-# Node
-# Tauri / Rust
-*.log
-.DS_Store
-.claude/worktrees/
 .idea/
-.vite/
 .vscode/
-dist/
-landing/downloads/
+.DS_Store
+
+# Logs
+*.log
+
+# Node
 node_modules/
+dist/
+.vite/
+
+# Tauri / Rust
 src-tauri/gen/
 src-tauri/target/
+
+# Build artifacts
+landing/downloads/
 landing/updates/
+
+# Claude worktrees & AI 工作文件（不对外公开）
+.claude/
+CLAUDE.md
+AGENTS.md
+PRD.md
+docs/BUSINESS.md
+
+# ── 敏感信息（绝不上传）──
+# Apple 签名证书
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+
+# 环境变量 / 密钥
+.env
+.env.*
+!.env.example
+secrets/
+*.secret
+
+# Tauri 签名私钥
+src-tauri/*.key
+src-tauri/*.key.pub
+
+# 更新服务器配置（含私钥）
+updater-private-key.pem

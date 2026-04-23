@@ -1,8 +1,10 @@
 import {
   Component,
+  createEffect,
   createMemo,
   createSignal,
   For,
+  onCleanup,
   onMount,
   Show,
 } from "solid-js";
@@ -19,6 +21,14 @@ import {
   fmtBytes,
   fmtDuration,
 } from "@/lib/format";
+import DockerSection from "@/components/DockerSection";
+import {
+  animateNumber,
+  playCleanFailureSound,
+  playCleanStartSound,
+  playCleanSuccessSound,
+} from "@/lib/cleanFeedback";
+import CleanupFlash from "@/components/CleanupFlash";
 import { CheckCircle2, Loader2, RefreshCw, Sparkles, XCircle } from "lucide-solid";
 import {
   isPermissionGranted,
@@ -63,6 +73,12 @@ const CacheView: Component = () => {
   const [selected, setSelected] = createSignal(new Set<string>());
   const [cleaning, setCleaning] = createSignal(false);
   const [summary, setSummary] = createSignal<CleanSummary | null>(null);
+  const [cleanProgress, setCleanProgress] = createSignal(0);
+  const [displayFreedBytes, setDisplayFreedBytes] = createSignal(0);
+  const [showFlash, setShowFlash] = createSignal(false);
+
+  let progressTimer: number | undefined;
+  let cancelBytesAnimation: (() => void) | undefined;
 
   const runScan = async () => {
     setScanning(true);
@@ -82,6 +98,10 @@ const CacheView: Component = () => {
   };
 
   onMount(runScan);
+  onCleanup(() => {
+    if (progressTimer) window.clearInterval(progressTimer);
+    cancelBytesAnimation?.();
+  });
 
   const toggle = (id: string) => {
     const next = new Set(selected());
@@ -101,17 +121,47 @@ const CacheView: Component = () => {
     if (items.length === 0) return;
     setCleaning(true);
     setSummary(null);
+    setCleanProgress(0.08);
+    setDisplayFreedBytes(0);
+    void playCleanStartSound();
+    if (progressTimer) window.clearInterval(progressTimer);
+    progressTimer = window.setInterval(() => {
+      setCleanProgress((prev) => Math.min(prev + (prev < 0.6 ? 0.06 : 0.025), 0.92));
+    }, 180);
     try {
       const s = await cleanCache(items);
       setSummary(s);
+      setCleanProgress(1);
       await runScan();
       await notifyCleanComplete(s.total_freed_bytes, s.success_count);
+      if (s.success_count > 0) {
+        setShowFlash(true);
+        void playCleanSuccessSound();
+      } else {
+        void playCleanFailureSound();
+      }
     } catch (e) {
       console.error(e);
+      void playCleanFailureSound();
     } finally {
+      if (progressTimer) {
+        window.clearInterval(progressTimer);
+        progressTimer = undefined;
+      }
       setCleaning(false);
     }
   };
+
+  createEffect(() => {
+    const freed = summary()?.total_freed_bytes ?? 0;
+    cancelBytesAnimation?.();
+    cancelBytesAnimation = animateNumber(
+      displayFreedBytes(),
+      freed,
+      summary() ? 1000 : 0,
+      setDisplayFreedBytes,
+    );
+  });
 
   const grouped = createMemo(() => {
     const items = result()?.items ?? [];
@@ -125,11 +175,70 @@ const CacheView: Component = () => {
 
   return (
     <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
-      <div class="card p-6 animate-fade-in">
-        <div class="flex items-center justify-between">
-          <div>
+      <CleanupFlash visible={showFlash()} onDone={() => setShowFlash(false)} />
+      <div
+        class="card p-6 animate-fade-in relative"
+        classList={{
+          "clean-hero clean-hero--active": cleaning() || !!summary(),
+          "clean-hero--done": !!summary() && !cleaning(),
+        }}
+      >
+        <div class="clean-hero__glow" />
+        <Show when={cleaning() || summary()}>
+          <div class="clean-hero__particles">
+            <For each={Array.from({ length: 10 })}>
+              {(_, index) => (
+                <span
+                  class="clean-hero__particle"
+                  style={{
+                    left: `${8 + index() * 9}%`,
+                    "animation-delay": `${index() * 60}ms`,
+                  }}
+                />
+              )}
+            </For>
+          </div>
+        </Show>
+        <div class="relative z-10 flex items-center justify-between gap-6">
+          <div class="min-w-0">
             <h2 class="text-base font-semibold">{t("cache.title")}</h2>
             <p class="text-xs text-zinc-500 mt-0.5">{t("cache.subtitle")}</p>
+            <Show when={cleaning()}>
+              <div class="mt-4 max-w-[420px]">
+                <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-brand-700 dark:text-brand-300">
+                  <span>{t("cache.cleaningStage")}</span>
+                  <span>{Math.round(cleanProgress() * 100)}%</span>
+                </div>
+                <div class="mt-2 h-2.5 rounded-full bg-brand-500/10 overflow-hidden">
+                  <div
+                    class="clean-progress-bar"
+                    style={{ width: `${cleanProgress() * 100}%` }}
+                  />
+                </div>
+                <div class="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
+                  {t("cache.cleaningLive", {
+                    count: selected().size,
+                    size: fmtBytes(selectedBytes()),
+                  })}
+                </div>
+              </div>
+            </Show>
+            <Show when={summary() && !cleaning()}>
+              <div class="mt-4">
+                <div class="text-[11px] uppercase tracking-[0.16em] text-success-600 dark:text-success-400">
+                  {t("cache.releaseLabel")}
+                </div>
+                <div class="mt-1 text-4xl font-bold tabular-nums text-success-600 clean-result-number">
+                  {fmtBytes(displayFreedBytes())}
+                </div>
+                <div class="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+                  {t("cache.cleanSuccessDetail", {
+                    count: summary()!.success_count,
+                    failed: summary()!.fail_count,
+                  })}
+                </div>
+              </div>
+            </Show>
           </div>
           <Show
             when={!scanning()}
@@ -140,8 +249,11 @@ const CacheView: Component = () => {
               </div>
             }
           >
-            <div class="text-right">
-              <div class="text-3xl font-bold text-brand-600 tabular-nums">
+            <div class="text-right shrink-0">
+              <div
+                class="text-3xl font-bold text-brand-600 tabular-nums transition-all duration-500"
+                classList={{ "scale-[1.06]": cleaning() }}
+              >
                 {fmtBytes(result()?.total_bytes ?? 0)}
               </div>
               <div class="text-xs text-zinc-500">{t("cache.freeable")}</div>
@@ -152,7 +264,7 @@ const CacheView: Component = () => {
 
       <Show when={summary()}>
         {(s) => (
-          <div class="card p-5 animate-slide-up bg-success-500/5 border-success-500/20">
+          <div class="card p-5 animate-slide-up bg-success-500/5 border-success-500/20 clean-summary-card">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-success-500/15 flex items-center justify-center">
                 <CheckCircle2 size={20} class="text-success-600" />
@@ -255,10 +367,17 @@ const CacheView: Component = () => {
         </For>
       </Show>
 
+      <DockerSection />
+
       <div class="flex items-center gap-3 pb-4">
         <button
           type="button"
-          class="btn-primary gap-2 min-w-[200px]"
+          class="btn-primary gap-2 min-w-[220px] clean-cta"
+          classList={{
+            "clean-cta--armed":
+              !cleaning() && !scanning() && selected().size > 0 && selectedBytes() > 0,
+            "clean-cta--busy": cleaning(),
+          }}
           disabled={
             cleaning() ||
             scanning() ||

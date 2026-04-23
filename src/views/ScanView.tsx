@@ -8,6 +8,7 @@ import {
 import HealthCard from "@/components/HealthCard";
 import ProcessList from "@/components/ProcessList";
 import Welcome from "@/components/Welcome";
+import CleanupFlash from "@/components/CleanupFlash";
 import {
   scanAll,
   killProcesses,
@@ -16,6 +17,7 @@ import {
   type SystemHealth,
 } from "@/lib/tauri";
 import { Sparkles, RefreshCw, Loader2 } from "lucide-solid";
+import { playCleanSuccessSound } from "@/lib/cleanFeedback";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { useI18n } from "@/i18n";
 
@@ -31,6 +33,7 @@ const ScanView: Component = () => {
   const [showWelcome, setShowWelcome] = createSignal(
     localStorage.getItem(WELCOME_SEEN_KEY) !== "true",
   );
+  const [showFlash, setShowFlash] = createSignal(false);
 
   const runScan = async () => {
     setScanning(true);
@@ -105,6 +108,11 @@ const ScanView: Component = () => {
         if (failReasons) msg += ` —— ${failReasons}`;
       }
       setMessage(msg);
+      // 有成功终止的进程时触发光晕 + 音效
+      if (r.killed.length > 0) {
+        setShowFlash(true);
+        void playCleanSuccessSound();
+      }
       await runScan();
     } catch (e) {
       setMessage(t("scan.optimizeFailed", { error: String(e) }));
@@ -113,66 +121,65 @@ const ScanView: Component = () => {
     }
   };
 
-  if (showWelcome()) {
-    return <Welcome onStart={handleStart} />;
-  }
-
   return (
-    <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
-      <HealthCard health={result()?.health ?? null} />
+    <Show when={!showWelcome()} fallback={<Welcome onStart={handleStart} />}>
+      <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
+        <CleanupFlash visible={showFlash()} onDone={() => setShowFlash(false)} />
+        <HealthCard health={result()?.health ?? null} />
 
-      <ProcessList
-        processes={result()?.processes ?? []}
-        selected={selected()}
-        onToggle={toggle}
-        onWhitelist={async (name) => {
-          await addWhitelist("process", name, "scan list add");
-          setMessage(t("scan.whitelistAdded", { name }));
-          await runScan();
-        }}
-      />
+        <ProcessList
+          processes={result()?.processes ?? []}
+          selected={selected()}
+          onToggle={toggle}
+          onWhitelist={async (name) => {
+            await addWhitelist("process", name, "scan list add");
+            setMessage(t("scan.whitelistAdded", { name }));
+            await runScan();
+          }}
+        />
 
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="btn-primary gap-2 min-w-[180px]"
-          disabled={optimizing() || scanning() || selected().size === 0}
-          onClick={optimize}
-        >
-          <Show
-            when={!optimizing()}
-            fallback={<Loader2 size={16} class="animate-spin" />}
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="btn-primary gap-2 min-w-[180px]"
+            disabled={optimizing() || scanning() || selected().size === 0}
+            onClick={optimize}
           >
-            <Sparkles size={16} />
-          </Show>
-          {t("scan.oneClick")}
-          {selected().size > 0 ? ` (${selected().size})` : ""}
-        </button>
+            <Show
+              when={!optimizing()}
+              fallback={<Loader2 size={16} class="animate-spin" />}
+            >
+              <Sparkles size={16} />
+            </Show>
+            {t("scan.oneClick")}
+            {selected().size > 0 ? ` (${selected().size})` : ""}
+          </button>
 
-        <button
-          type="button"
-          class="btn-ghost gap-2"
-          disabled={scanning()}
-          onClick={runScan}
-        >
-          <Show
-            when={!scanning()}
-            fallback={<Loader2 size={16} class="animate-spin" />}
+          <button
+            type="button"
+            class="btn-ghost gap-2"
+            disabled={scanning()}
+            onClick={runScan}
           >
-            <RefreshCw size={16} />
+            <Show
+              when={!scanning()}
+              fallback={<Loader2 size={16} class="animate-spin" />}
+            >
+              <RefreshCw size={16} />
+            </Show>
+            {t("common.rescan")}
+          </button>
+
+          <Show when={message()}>
+            <span class="text-xs text-zinc-500 animate-fade-in">{message()}</span>
           </Show>
-          {t("common.rescan")}
-        </button>
 
-        <Show when={message()}>
-          <span class="text-xs text-zinc-500 animate-fade-in">{message()}</span>
-        </Show>
-
-        <span class="ml-auto text-[11px] text-zinc-400">
-          {t("common.notice_irreversible")}
-        </span>
+          <span class="ml-auto text-[11px] text-zinc-400">
+            {t("common.notice_irreversible")}
+          </span>
+        </div>
       </div>
-    </div>
+    </Show>
   );
 };
 

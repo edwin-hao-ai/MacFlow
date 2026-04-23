@@ -5,7 +5,6 @@ import {
   HardDrive,
   History as HistoryIcon,
   Package,
-  Container,
   Settings as SettingsIcon,
 } from "lucide-solid";
 import { useI18n } from "@/i18n";
@@ -15,7 +14,6 @@ export type ViewId =
   | "process"
   | "applications"
   | "cache"
-  | "docker"
   | "history"
   | "settings";
 
@@ -29,7 +27,6 @@ const items: { id: ViewId; icon: Component<{ size?: number }> }[] = [
   { id: "process", icon: Cpu },
   { id: "applications", icon: Package },
   { id: "cache", icon: HardDrive },
-  { id: "docker", icon: Container },
   { id: "history", icon: HistoryIcon },
   { id: "settings", icon: SettingsIcon },
 ];
@@ -38,10 +35,15 @@ const Sidebar: Component<Props> = (props) => {
   const { t } = useI18n();
   return (
     <aside class="w-[200px] flex flex-col border-r border-black/5 dark:border-white/5 bg-[rgb(var(--bg-sidebar))/var(--bg-sidebar-alpha)]">
-      <div class="drag-region h-12 flex items-center px-5">
-        <span class="font-semibold tracking-tight text-[15px]">
-          {t("common.appName")}
-        </span>
+      <div class="drag-region h-13 flex items-end pb-2 px-5">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm">
+            <Activity size={13} class="text-white" />
+          </div>
+          <span class="font-semibold tracking-tight text-[15px]">
+            {t("common.appName")}
+          </span>
+        </div>
       </div>
       <nav class="px-2 py-2 flex flex-col gap-0.5 no-drag">
         <For each={items}>

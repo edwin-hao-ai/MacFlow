@@ -23,9 +23,11 @@ import { getVersion } from "@tauri-apps/api/app";
 const PREFS_KEY = "macflow.prefs.v1";
 type Prefs = {
   notifyOnCleanComplete: boolean;
+  cleanupSoundEnabled: boolean;
 };
 const defaultPrefs: Prefs = {
   notifyOnCleanComplete: true,
+  cleanupSoundEnabled: true,
 };
 
 function loadPrefs(): Prefs {
@@ -171,6 +173,12 @@ const SettingsView: Component = () => {
             </button>
           </div>
         </Show>
+        <ToggleRow
+          label={t("settings.cleanupSound")}
+          desc={t("settings.cleanupSoundDesc")}
+          checked={prefs().cleanupSoundEnabled}
+          onChange={(v) => updatePref({ cleanupSoundEnabled: v })}
+        />
 
         {/* 语言 */}
         <div class="px-3 py-3 rounded-lg">

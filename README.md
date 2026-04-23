@@ -1,118 +1,229 @@
+<div align="center">
+
+<img src="assets/logo.svg" width="80" height="80" alt="MacFlow" />
+
 # MacFlow
 
-> Mac 专属的一键式系统运维工具 · DMG 8.0 MB
+**The Mac cleaner that developers actually trust.**
 
-MacFlow 清理冗余进程和开发者缓存（NPM / Docker / Xcode / Homebrew / Cargo / Go 等），让 Mac 保持轻快。
+One-click cleanup for app caches, developer tools, Docker, and more — built with Rust and Tauri, not Electron.
 
-- 🪶 **极致轻量**：DMG 8.0 MB，比 CleanMyMac 小 100 倍，比 Electron 应用小 20 倍
-- 🛡️ **三重安全防御**：工具占用检测 + 路径白名单 + 执行前二次校验
-- 🎯 **规则驱动**：不接 AI，所有分类用规则，可审计
-- 🔒 **零数据上传**：本地 SQLite 存储，离线运行
-- ⚡ **双形态**：桌面应用 + CLI 共享 Rust 核心
+[Download for macOS →](https://github.com/edwinhao/macflow/releases)
 
-## 快速开始
+![macOS](https://img.shields.io/badge/macOS-13%2B-black?logo=apple)
+![Tauri](https://img.shields.io/badge/Tauri-v2-blue)
+![Rust](https://img.shields.io/badge/Rust-1.80%2B-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-### 下载
+</div>
 
-访问 [macflow.app](https://macflow.app) 或从 [Releases](https://github.com/edwinhao/macflow/releases) 下载最新 DMG。
+---
 
-### 从源码构建
+## Why MacFlow?
 
-**前置**：
-- Rust 1.80+（`curl https://sh.rustup.rs | sh`）
-- Bun 1.3+（`curl https://bun.sh/install | bash`）
-- macOS 13+ & Xcode Command Line Tools
+Most Mac cleaners are either too simple (just empty the trash) or too bloated (Electron apps heavier than what they clean). MacFlow is different:
 
-**构建**：
+- **Tiny**: ~12 MB DMG. CleanMyMac is 200 MB+.
+- **Fast**: Rust backend, sub-second scans.
+- **Honest**: Every item shows exactly what will be deleted and why. No dark patterns.
+- **Developer-aware**: Understands npm, pnpm, Docker, Xcode, Cargo, Homebrew — not just `~/Library/Caches`.
+- **Safe**: Triple-layer protection. Won't touch files that tools are actively using.
+- **Private**: Zero telemetry. No account required. All data stays on your Mac.
+
+---
+
+## What it cleans
+
+| Category | Items | Safe to clean? |
+| :--- | :--- | :--- |
+| **System** | App caches, logs, crash reports, Trash | ✅ Always |
+| **npm / pnpm / Yarn** | Download caches, store | ✅ Always |
+| **Docker** | Build cache, dangling images, stopped containers | ✅ / ⚠️ |
+| **Homebrew** | Downloaded bottles, old versions | ✅ Always |
+| **Xcode** | DerivedData, simulator caches, device support | ✅ / ⚠️ |
+| **Cargo** | Registry download cache | ✅ Always |
+| **Pip / Go** | Build and download caches | ✅ Always |
+
+Items marked ⚠️ are shown but not selected by default.
+
+---
+
+## Screenshots
+
+> *(coming soon — PRs welcome)*
+
+---
+
+## Getting Started
+
+### Download
+
+Grab the latest `.dmg` from [Releases](https://github.com/edwinhao/macflow/releases) and drag MacFlow to your Applications folder.
+
+**Requirements**: macOS 13 Ventura or later, Apple Silicon or Intel.
+
+### Build from source
+
+**Prerequisites**
+
+```bash
+# Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Bun (package manager)
+curl -fsSL https://bun.sh/install | bash
+
+# Xcode Command Line Tools
+xcode-select --install
+```
+
+**Run in development**
+
+```bash
+git clone https://github.com/edwinhao/macflow.git
+cd macflow
+bun install
+bun run tauri dev
+```
+
+**Build a release**
+
+```bash
+# Apple Silicon
+bun run bundle:arm
+
+# Intel
+bun run bundle:intel
+
+# Universal binary (both architectures)
+bun run bundle:universal
+```
+
+The `.app` and `.dmg` will be in `src-tauri/target/<arch>/release/bundle/`.
+
+---
+
+## Tech Stack
+
+| Layer | Choice | Why |
+| :--- | :--- | :--- |
+| Desktop framework | Tauri v2 | Native WebView, no Chromium bundled |
+| Frontend | SolidJS + TypeScript | 3–5× smaller bundle than React, no Virtual DOM |
+| Styling | Tailwind CSS v4 | Utility-first, zero runtime |
+| Backend | Rust | Memory-safe, fast, great macOS APIs |
+| System info | sysinfo 0.33 | Cross-platform process/memory/disk |
+| Process signals | nix (POSIX) | Native `kill()`, no shell subprocess |
+| Storage | rusqlite 0.32 | Embedded SQLite, no server |
+
+---
+
+## Safety Model
+
+MacFlow uses a three-layer safety system before deleting anything:
+
+1. **Tool busy check** — if `npm`, `cargo`, `xcodebuild`, etc. are running, their caches are hidden from the scan entirely.
+2. **Path allowlist** — only a hardcoded set of safe paths can ever be deleted. Attempts to delete `/`, `$HOME`, `~/Documents`, or anything outside the allowlist are rejected.
+3. **Pre-execution re-check** — right before deletion, the tool-busy check runs again to guard against race conditions.
+
+All cleanup operations are logged to a local SQLite database. You can review every action in the History tab.
+
+---
+
+## Project Structure
+
+```
+macflow/
+├── src/                  # SolidJS frontend
+│   ├── views/            # Page components (Scan, Cache, Process, Settings…)
+│   ├── components/       # Shared UI components
+│   ├── i18n/             # Translations (zh-CN, en)
+│   └── lib/              # Tauri IPC wrappers, utilities
+├── src-tauri/            # Rust backend
+│   └── src/
+│       ├── scanner.rs        # Process scanner & classifier
+│       ├── cache_scanner.rs  # Cache discovery
+│       ├── cache_cleaner.rs  # Safe deletion logic
+│       ├── process_ops.rs    # Graceful kill with respawn detection
+│       ├── process_safety.rs # Safety allowlist & veto rules
+│       └── storage.rs        # SQLite history & whitelist
+├── assets/               # App icons and marketing assets
+└── scripts/              # Release & signing scripts
+```
+
+---
+
+## Contributing
+
+Contributions are welcome. Please open an issue before submitting a large PR so we can discuss the approach.
+
+```bash
+# Run Rust tests
+cargo test --manifest-path src-tauri/Cargo.toml
+
+# Type-check frontend
+bun run build
+```
+
+---
+
+## Roadmap
+
+- [x] Process management (kill zombie/idle processes)
+- [x] Cache cleanup (npm, Docker, Xcode, Homebrew, Cargo, Pip, Go)
+- [x] System cache cleanup (app caches, logs, crash reports)
+- [x] System health dashboard (CPU, memory, disk)
+- [x] Operation history & audit log
+- [x] Custom whitelist
+- [x] Menu bar tray
+- [x] i18n (English + 中文)
+- [ ] Auto-cleanup scheduler (Pro)
+- [ ] Multi-device whitelist sync (Pro)
+- [ ] Notarized universal binary release
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+<div align="center">
+
+## 中文说明
+
+</div>
+
+MacFlow 是一款 Mac 专属的系统清理工具，面向开发者和普通用户。
+
+**核心特点：**
+
+- 清理应用缓存、日志、崩溃报告等系统垃圾
+- 深度支持开发者工具：npm / pnpm / Docker / Xcode / Homebrew / Cargo / Pip / Go
+- 进程管理：识别并终止僵尸进程、长期闲置进程
+- 系统健康监控：CPU / 内存 / 磁盘实时显示
+- 操作历史：每次清理都有日志，可审计
+- 完全本地运行，零数据上传，无需账号
+
+**安装方式：**
+
+从 [Releases](https://github.com/edwinhao/macflow/releases) 下载最新 `.dmg`，拖入应用程序文件夹即可。
+
+**从源码构建：**
 
 ```bash
 git clone https://github.com/edwinhao/macflow.git
 cd macflow
 bun install
 bun run tauri dev      # 开发模式
-bun run tauri build    # Release 打包
+bun run bundle:arm     # 打包 Apple Silicon
+bun run bundle:intel   # 打包 Intel
 ```
 
-带签名的 Release 构建：
-
-```bash
-./scripts/release.sh arm        # Apple Silicon
-./scripts/release.sh intel      # Intel
-./scripts/release.sh universal  # 通用二进制
-```
-
-## CLI
-
-MacFlow 自带 `macflow-cli` 二进制：
-
-```bash
-macflow-cli --scan     # 扫描，不执行清理
-macflow-cli --cache    # 扫描并清理所有安全项
-macflow-cli --help     # 完整帮助
-```
-
-## 技术栈
-
-| 层 | 选择 | 版本 |
-| :--- | :--- | :--- |
-| 桌面框架 | Tauri | v2.10 |
-| 前端 | SolidJS + TypeScript | 1.9 |
-| 样式 | Tailwind CSS | v4 |
-| 后端 | Rust | 1.95 |
-| 系统监控 | sysinfo | 0.33 |
-| 进程信号 | nix (POSIX kill) | 0.29 |
-| 持久化 | rusqlite | 0.32 |
-
-## 清理范围
-
-| 类别 | 命令 | 默认选中 |
-| :--- | :--- | :--- |
-| NPM 全局缓存 | `npm cache clean --force` | ✅ |
-| PNPM Store | `pnpm store prune` | ✅ |
-| Yarn 缓存 | `yarn cache clean` | ✅ |
-| Docker 悬空镜像 | `docker image prune -f` | ✅ |
-| Docker 构建缓存 | `docker builder prune -f` | ✅ |
-| Docker 30 天停止容器 | `docker container prune -f --filter until=720h` | ✅ |
-| Docker 匿名卷 | `docker volume prune -f` | ⚠️ 默认不选 |
-| Homebrew 旧包缓存 | `brew cleanup -s` | ✅ |
-| Xcode DerivedData | 直接删除 | ✅ |
-| Xcode iOS 模拟器缓存 | 直接删除 | ✅ |
-| Xcode iOS 设备支持 | 直接删除 | ⚠️ 默认不选 |
-| CocoaPods 缓存 | 直接删除 | ✅ |
-| Cargo 下载缓存 | 直接删除 `~/.cargo/registry/cache` | ✅ |
-| Pip 缓存 | `pip cache purge` | ✅ |
-| Go 编译缓存 | `go clean -cache` | ✅ |
-
-## 安全保证
-
-1. **工具占用检测**：npm / pnpm / yarn / brew / xcodebuild / cargo / go / pip 任一正在运行时，对应缓存不会出现在扫描列表
-2. **路径白名单硬编码**：12 条允许路径，`canonicalize` 后比对，拒绝 `/`、`$HOME`、`~/Documents` 等
-3. **执行前二次校验**：清理瞬间再次检查工具是否启动
-4. **原生命令优先**：使用官方 cleanup 命令而非手动删除
-5. **单元测试覆盖**：`cargo test` 验证白名单防御
-
-## 里程碑
-
-- [x] **M1** 项目骨架：Tauri + SolidJS + Tailwind v4
-- [x] **M2** 缓存清理 + SQLite + 托盘 + CLI
-- [x] **M3** 安全加固 + 后台监控 + 通知 + 开机启动 + 端口检测 + 欢迎页
-- [ ] **M4** 公测：官网 landing、Universal 2 打包、notarization 自动化
-
-## 许可
-
-MIT License
-
-## 非目标
-
-MacFlow **不做**以下事情：
-
-- Windows / Linux 版本
-- 杀毒、防火墙
-- 应用卸载、大文件扫描、重复文件清理
-- 任何 AI / LLM 调用
-- 广告、推送、遥测
-- 云端同步（Pro 版除外，正在设计中）
+**技术栈：** Tauri v2 · SolidJS · Rust · Tailwind CSS v4
 
 ---
 
-Made with 🫀 in Beijing · Rust 1.95 · Tauri v2
+<div align="center">
+Made with ♥ in Beijing &nbsp;·&nbsp; <a href="https://github.com/edwinhao/macflow/issues">Report a bug</a> &nbsp;·&nbsp; <a href="https://github.com/edwinhao/macflow/discussions">Discussions</a>
+</div>
