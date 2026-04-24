@@ -23,6 +23,7 @@ export type ProcessInfo = {
   default_select: boolean;
   reason: string;
   ports: number[];
+  icon_base64: string | null;
 };
 
 export type ScanResult = {
@@ -71,6 +72,7 @@ export type ProcessRow = {
   uptime_secs: number;
   status: string;
   ports: number[];
+  icon_base64: string | null;
   protected: boolean;
   protected_reason: string | null;
   whitelisted: boolean;
@@ -100,6 +102,7 @@ export type AppInfo = {
   bundle_path: string;
   name: string;
   bundle_id: string;
+  icon_base64: string | null;
   main_pid: number;
   all_pids: number[];
   children: AppChildProcess[];
@@ -283,4 +286,77 @@ export async function addWhitelist(kind: string, value: string, note = ""): Prom
 
 export async function removeWhitelist(id: number): Promise<void> {
   return invoke("remove_whitelist", { id });
+}
+
+
+// ========== 应用卸载 ==========
+
+export type InstalledApp = {
+  bundle_path: string;
+  name: string;
+  bundle_id: string;
+  icon_base64: string | null;
+  bundle_size_bytes: number;
+  is_system: boolean;
+  is_running: boolean;
+  estimated_residue_bytes: number;
+};
+
+export type ResidueItem = {
+  path: string;
+  category: string;
+  size_bytes: number;
+  is_dev_tool: boolean;
+  selected: boolean;
+};
+
+export type AppResidue = {
+  bundle_id: string;
+  app_name: string;
+  items: ResidueItem[];
+  total_bytes: number;
+  scan_complete: boolean;
+};
+
+export type UninstallTarget = {
+  bundle_path: string;
+  app_name: string;
+  bundle_id: string;
+  residue_paths: string[];
+};
+
+export type MoveResult = {
+  path: string;
+  success: boolean;
+  error: string | null;
+  size_bytes: number;
+};
+
+export type UninstallReport = {
+  app_name: string;
+  bundle_id: string;
+  total_freed_bytes: number;
+  moved_count: number;
+  failed_count: number;
+  details: MoveResult[];
+};
+
+export async function scanInstalledApps(): Promise<InstalledApp[]> {
+  return invoke("scan_installed_apps");
+}
+
+export async function scanAppResidues(bundleId: string, appName: string): Promise<AppResidue> {
+  return invoke("scan_app_residues", { bundleId, appName });
+}
+
+export async function uninstallApps(targets: UninstallTarget[]): Promise<UninstallReport[]> {
+  return invoke("uninstall_apps", { targets });
+}
+
+export async function checkAppRunning(bundlePath: string): Promise<boolean> {
+  return invoke("check_app_running", { bundlePath });
+}
+
+export async function quitAndUninstall(appName: string, target: UninstallTarget): Promise<UninstallReport> {
+  return invoke("quit_and_uninstall", { appName, target });
 }

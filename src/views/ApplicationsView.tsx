@@ -267,9 +267,17 @@ const ApplicationsView: Component = () => {
                       </Show>
                     </button>
 
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center flex-shrink-0 text-white">
-                      <Package size={18} />
-                    </div>
+                    <Show when={app.icon_base64} fallback={
+                      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center flex-shrink-0 text-white">
+                        <Package size={18} />
+                      </div>
+                    }>
+                      <img
+                        src={`data:image/png;base64,${app.icon_base64}`}
+                        alt={app.name}
+                        class="w-10 h-10 rounded-xl flex-shrink-0"
+                      />
+                    </Show>
                     <div class="min-w-0 flex-1">
                       <div class="flex items-center gap-2">
                         <div class="font-semibold text-sm truncate">

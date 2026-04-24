@@ -36,6 +36,8 @@ pub struct AppInfo {
     pub name: String,
     /// bundle id，如 com.apple.Safari（可能为空）
     pub bundle_id: String,
+    /// 应用图标 base64 PNG（64x64）
+    pub icon_base64: Option<String>,
     /// 主进程 PID（通常是路径最短的那个）
     pub main_pid: u32,
     /// 所有相关进程（主进程 + helper）
@@ -125,7 +127,7 @@ pub fn list_running_apps(sys: &mut System) -> Vec<AppInfo> {
 }
 
 /// 从 exe 路径往上找 .app 结尾的目录
-fn find_app_bundle(exe: &std::path::Path) -> Option<PathBuf> {
+pub(crate) fn find_app_bundle(exe: &std::path::Path) -> Option<PathBuf> {
     for ancestor in exe.ancestors() {
         if let Some(name) = ancestor.file_name() {
             if name.to_string_lossy().ends_with(".app") {
@@ -189,10 +191,14 @@ fn build_app_info(
     let protected_process_count = children.iter().filter(|c| c.protected).count();
     let whitelisted_process_count = children.iter().filter(|c| c.whitelisted).count();
 
+    // 读取应用图标
+    let icon_base64 = crate::app_scanner::read_icon_base64_for_bundle(&bundle);
+
     Some(AppInfo {
         bundle_path: bundle_path.to_string(),
         name,
         bundle_id: bundle_id.unwrap_or_default(),
+        icon_base64,
         main_pid,
         all_pids,
         children,
@@ -332,25 +338,42 @@ fn build_children_tree(
 /// 读 .app/Contents/Info.plist，提取 CFBundleName / CFBundleIdentifier
 /// 用最朴素的文本解析（Info.plist 多是 XML 格式；二进制 plist 我们不解析，
 /// 返回 None 由 caller 走路径推断兜底）
-fn read_plist_metadata(path: &std::path::Path) -> (Option<String>, Option<String>) {
+pub(crate) fn read_plist_metadata(path: &std::path::Path) -> (Option<String>, Option<String>) {
     let Ok(bytes) = std::fs::read(path) else {
         return (None, None);
     };
-    // 快速判别：二进制 plist 以 "bplist" 开头
-    if bytes.starts_with(b"bplist") {
-        // 二进制 plist 不解析，回退
-        return (None, None);
-    }
-    let Ok(text) = std::str::from_utf8(&bytes) else {
-        return (None, None);
+    // 二进制 plist 以 "bplist" 开头，用 plutil 转换为 XML 再解析
+    let text = if bytes.starts_with(b"bplist") {
+        match convert_bplist_to_xml(path) {
+            Some(t) => t,
+            None => return (None, None),
+        }
+    } else {
+        match std::str::from_utf8(&bytes) {
+            Ok(t) => t.to_string(),
+            Err(_) => return (None, None),
+        }
     };
-    let name = extract_plist_string(text, "CFBundleDisplayName")
-        .or_else(|| extract_plist_string(text, "CFBundleName"));
-    let id = extract_plist_string(text, "CFBundleIdentifier");
+    let name = extract_plist_string(&text, "CFBundleDisplayName")
+        .or_else(|| extract_plist_string(&text, "CFBundleName"));
+    let id = extract_plist_string(&text, "CFBundleIdentifier");
     (name, id)
 }
 
-fn extract_plist_string(text: &str, key: &str) -> Option<String> {
+/// 用 plutil 将二进制 plist 转换为 XML 文本
+fn convert_bplist_to_xml(path: &std::path::Path) -> Option<String> {
+    let output = std::process::Command::new("plutil")
+        .args(["-convert", "xml1", "-o", "-"])
+        .arg(path)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    String::from_utf8(output.stdout).ok()
+}
+
+pub(crate) fn extract_plist_string(text: &str, key: &str) -> Option<String> {
     // 找 <key>KEY</key>...<string>VALUE</string>
     let key_tag = format!("<key>{}</key>", key);
     let idx = text.find(&key_tag)?;

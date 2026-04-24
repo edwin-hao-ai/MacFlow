@@ -6,6 +6,7 @@ import HistoryView from "@/views/HistoryView";
 import SettingsView from "@/views/SettingsView";
 import ProcessView from "@/views/ProcessView";
 import ApplicationsView from "@/views/ApplicationsView";
+import UninstallerView from "@/views/UninstallerView";
 import { listen } from "@tauri-apps/api/event";
 import { useI18n } from "@/i18n";
 
@@ -43,6 +44,7 @@ const App: Component = () => {
           <TabPanel id="process" active={view()}><ProcessView /></TabPanel>
           <TabPanel id="applications" active={view()}><ApplicationsView /></TabPanel>
           <TabPanel id="cache" active={view()}><CacheView /></TabPanel>
+          <TabPanel id="uninstaller" active={view()}><UninstallerView /></TabPanel>
           <TabPanel id="history" active={view()}><HistoryView /></TabPanel>
           <TabPanel id="settings" active={view()}><SettingsView /></TabPanel>
         </div>

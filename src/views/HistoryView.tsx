@@ -1,7 +1,7 @@
 import { Component, createSignal, For, onMount, Show } from "solid-js";
 import { getHistory, type HistoryEntry } from "@/lib/tauri";
 import { fmtBytes, fmtRelativeTime } from "@/lib/format";
-import { CheckCircle2, XCircle, Cpu, HardDrive, Loader2 } from "lucide-solid";
+import { CheckCircle2, XCircle, Cpu, HardDrive, Loader2, Trash2 } from "lucide-solid";
 import { useI18n } from "@/i18n";
 
 const HistoryView: Component = () => {
@@ -26,7 +26,9 @@ const HistoryView: Component = () => {
       ? t("history.opProcessKill")
       : op === "cache_clean"
         ? t("history.opCacheClean")
-        : op;
+        : op === "app_uninstall"
+          ? t("history.opAppUninstall")
+          : op;
 
   return (
     <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
@@ -70,11 +72,15 @@ const HistoryView: Component = () => {
                           class={`w-9 h-9 rounded-lg flex items-center justify-center ${
                             e.operation === "process_kill"
                               ? "bg-brand-500/10"
-                              : "bg-success-500/10"
+                              : e.operation === "app_uninstall"
+                                ? "bg-warning-500/10"
+                                : "bg-success-500/10"
                           }`}
                         >
                           {e.operation === "process_kill" ? (
                             <Cpu size={16} class="text-brand-600" />
+                          ) : e.operation === "app_uninstall" ? (
+                            <Trash2 size={16} class="text-warning-600" />
                           ) : (
                             <HardDrive size={16} class="text-success-600" />
                           )}

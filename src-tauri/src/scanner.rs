@@ -28,6 +28,7 @@ pub struct ProcessInfo {
     pub default_select: bool,
     pub reason: String,
     pub ports: Vec<u16>,
+    pub icon_base64: Option<String>,
 }
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq)]
@@ -78,6 +79,7 @@ pub struct ProcessRow {
     pub uptime_secs: u64,
     pub status: String,
     pub ports: Vec<u16>,
+    pub icon_base64: Option<String>,
     /// 是否受保护（系统核心 / 多进程族父进程 / 有子进程 / 跨用户）
     /// 受保护的进程用户能看到但终止按钮禁用
     pub protected: bool,
@@ -188,6 +190,10 @@ pub fn list_all(sys: &mut System) -> Vec<ProcessRow> {
             uptime_secs: crate::process_safety::process_uptime_secs(proc),
             status,
             ports: Vec::new(),
+            icon_base64: proc.exe().and_then(|exe_path| {
+                let bundle = crate::applications::find_app_bundle(exe_path)?;
+                crate::app_scanner::read_icon_base64_for_bundle(&bundle)
+            }),
             protected,
             protected_reason,
             whitelisted,
@@ -282,6 +288,10 @@ fn classify_processes(sys: &System) -> Vec<ProcessInfo> {
             default_select: classification.default_select,
             reason: classification.reason,
             ports: Vec::new(),
+            icon_base64: proc.exe().and_then(|exe_path| {
+                let bundle = crate::applications::find_app_bundle(exe_path)?;
+                crate::app_scanner::read_icon_base64_for_bundle(&bundle)
+            }),
         });
     }
 

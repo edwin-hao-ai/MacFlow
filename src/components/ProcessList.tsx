@@ -65,6 +65,13 @@ const ProcessList: Component<Props> = (props) => {
                   onChange={() => props.onToggle(p.pid)}
                   class="w-4 h-4 rounded accent-brand-500"
                 />
+                <Show when={p.icon_base64}>
+                  <img
+                    src={`data:image/png;base64,${p.icon_base64}`}
+                    alt=""
+                    class="w-6 h-6 rounded flex-shrink-0"
+                  />
+                </Show>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="truncate font-medium text-sm">{p.name}</span>

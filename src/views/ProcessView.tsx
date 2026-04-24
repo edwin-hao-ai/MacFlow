@@ -467,6 +467,13 @@ const ProcessView: Component = () => {
                         />
                       </span>
                     </Show>
+                    <Show when={r.icon_base64}>
+                      <img
+                        src={`data:image/png;base64,${r.icon_base64}`}
+                        alt=""
+                        class="w-5 h-5 rounded flex-shrink-0"
+                      />
+                    </Show>
                     <div class="min-w-0 flex-1">
                       <div class="flex items-center gap-2 min-w-0">
                         <span class="truncate font-medium">{r.name}</span>

@@ -6,6 +6,7 @@ import {
   History as HistoryIcon,
   Package,
   Settings as SettingsIcon,
+  Trash2,
 } from "lucide-solid";
 import { useI18n } from "@/i18n";
 
@@ -14,6 +15,7 @@ export type ViewId =
   | "process"
   | "applications"
   | "cache"
+  | "uninstaller"
   | "history"
   | "settings";
 
@@ -27,6 +29,7 @@ const items: { id: ViewId; icon: Component<{ size?: number }> }[] = [
   { id: "process", icon: Cpu },
   { id: "applications", icon: Package },
   { id: "cache", icon: HardDrive },
+  { id: "uninstaller", icon: Trash2 },
   { id: "history", icon: HistoryIcon },
   { id: "settings", icon: SettingsIcon },
 ];

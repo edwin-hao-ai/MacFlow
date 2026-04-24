@@ -339,6 +339,16 @@
             <h3 class="font-semibold text-lg" data-i18n="feat6Title">Incredibly Lightweight</h3>
             <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed" data-i18n="feat6Desc">~12 MB total. CleanMyMac is 200+ MB. Built with Rust + Tauri instead of Electron — no bundled Chromium, no wasted resources. Starts in under 200ms.</p>
           </div>
+          <div class="card p-6">
+            <div class="text-2xl mb-3">🗑️</div>
+            <h3 class="font-semibold text-lg" data-i18n="feat7Title">App Uninstaller</h3>
+            <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed" data-i18n="feat7Desc">Completely remove apps and their leftover files. Deep clean rules for Xcode, VS Code, Docker Desktop, JetBrains IDEs, and Android Studio. Files go to Trash, not deleted permanently.</p>
+          </div>
+          <div class="card p-6">
+            <div class="text-2xl mb-3">🐳</div>
+            <h3 class="font-semibold text-lg" data-i18n="feat8Title">Docker Deep View</h3>
+            <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed" data-i18n="feat8Desc">Manage Docker images, containers, and volumes individually. See what's dangling, what's stopped, what's unused. Lighter than Docker Desktop's built-in UI.</p>
+          </div>
         </div>
         </div>
       </section>
@@ -438,6 +448,12 @@
                   <td class="px-6 py-3 text-zinc-700 dark:text-zinc-300" data-i18n="compRow7">Open source</td>
                   <td class="px-6 py-3 text-center text-success-600">✓</td>
                   <td class="px-6 py-3 text-center text-zinc-400">✗</td>
+                  <td class="px-6 py-3 text-center text-zinc-400">✗</td>
+                </tr>
+                <tr>
+                  <td class="px-6 py-3 text-zinc-700 dark:text-zinc-300" data-i18n="compRow8">App uninstaller</td>
+                  <td class="px-6 py-3 text-center text-success-600">✓</td>
+                  <td class="px-6 py-3 text-center text-success-600">✓</td>
                   <td class="px-6 py-3 text-center text-zinc-400">✗</td>
                 </tr>
               </tbody>
@@ -603,12 +619,14 @@
         feat4Title: "系统健康", feat4Desc: "实时 CPU、内存、磁盘环形图。内存显示的是真正的应用占用，不是包含文件缓存的误导数字。",
         feat5Title: "100% 隐私", feat5Desc: "无需账号。无遥测。无云端。所有操作在你的 Mac 本地运行。你的数据永远不会离开你的电脑——用任何网络监控工具都能验证。",
         feat6Title: "极致轻量", feat6Desc: "总共约 12 MB。CleanMyMac 超过 200 MB。用 Rust + Tauri 构建，不是 Electron——不捆绑 Chromium，不浪费资源。200ms 内启动。",
+        feat7Title: "应用卸载", feat7Desc: "完整卸载应用及其残留文件。内置 Xcode、VS Code、Docker Desktop、JetBrains、Android Studio 深度清理规则。文件移至废纸篓，不直接删除。",
+        feat8Title: "Docker 深度管理", feat8Desc: "逐个管理 Docker 镜像、容器和卷。清楚看到哪些是悬空的、哪些已停止、哪些未使用。比 Docker Desktop 自带界面更轻。",
         safetyBadge: "安全设计", safetyTitle: "只清该清的，其他一概不动", safetySubtitle: "清理工具最怕的是误删。MacFlow 从设计上就把这个风险降到最低。",
         safety1Title: "不碰正在使用的工具", safety1Desc: "如果你正在跑 npm install、在 Xcode 里构建、或者在编译 Rust 代码——MacFlow 不会碰这些缓存。每次都会先检查。",
         safety2Title: "严格的路径限制", safety2Desc: "MacFlow 只能删除固定的已知安全路径。你的主目录、文稿、桌面、下载文件夹永远不会被触碰，没有例外。",
         safety3Title: "完整的操作历史", safety3Desc: "每次清理都会在本地记录时间、文件大小和结果。你随时可以查看清理了什么——没有任何操作是悄悄进行的。",
         compTitle: "和竞品对比", compFeature: "功能", compActivityMonitor: "活动监视器",
-        compRow1: "价格", compRow2: "应用大小", compRow3: "一键清理", compRow4: "npm / Docker / Xcode 缓存", compRow5: "无需账号", compRow6: "零数据收集", compRow7: "开源",
+        compRow1: "价格", compRow2: "应用大小", compRow3: "一键清理", compRow4: "npm / Docker / Xcode 缓存", compRow5: "无需账号", compRow6: "零数据收集", compRow7: "开源", compRow8: "应用卸载",
         compFree: "免费", compBuiltIn: "系统内置",
         cliBadge: "面向开发者", cliTitle: "不用打开窗口也能用", cliDesc: "macflow-cli 是一个独立的命令行工具，和桌面端共享同一套 Rust 核心。可以在 CI、定时任务或终端里直接使用。",
         cliScan: "扫描，不执行清理", cliCache: "扫描并清理所有安全项", cliHelp: "完整帮助",
@@ -630,12 +648,14 @@
         feat4Title: "System Health", feat4Desc: "Real-time CPU, memory, and disk shown as clean ring charts. Memory shows actual app usage, not the misleading figure that includes file cache.",
         feat5Title: "100% Private", feat5Desc: "No account. No telemetry. No cloud. Everything runs locally on your Mac. Your data never leaves your machine — verify with any network monitor.",
         feat6Title: "Incredibly Lightweight", feat6Desc: "~12 MB total. CleanMyMac is 200+ MB. Built with Rust + Tauri instead of Electron — no bundled Chromium, no wasted resources. Starts in under 200ms.",
+        feat7Title: "App Uninstaller", feat7Desc: "Completely remove apps and their leftover files. Deep clean rules for Xcode, VS Code, Docker Desktop, JetBrains IDEs, and Android Studio. Files go to Trash, not deleted permanently.",
+        feat8Title: "Docker Deep View", feat8Desc: "Manage Docker images, containers, and volumes individually. See what's dangling, what's stopped, what's unused. Lighter than Docker Desktop's built-in UI.",
         safetyBadge: "Safe by design", safetyTitle: "Cleans what's safe. Leaves everything else alone.", safetySubtitle: "The worst thing a cleaner can do is delete something you needed. MacFlow is built around that fear.",
         safety1Title: "Won't touch active tools", safety1Desc: "If you're running npm install, building in Xcode, or compiling Rust code right now — MacFlow won't touch those caches. It checks first, every time.",
         safety2Title: "Strict path limits", safety2Desc: "MacFlow can only delete from a fixed list of known-safe locations. Your home folder, Documents, Desktop, and Downloads are permanently off-limits. No exceptions.",
         safety3Title: "Full history log", safety3Desc: "Every cleanup is logged locally with timestamps, file sizes, and results. You can always see exactly what was cleaned and when — nothing happens silently.",
         compTitle: "How MacFlow compares", compFeature: "Feature", compActivityMonitor: "Activity Monitor",
-        compRow1: "Price", compRow2: "App size", compRow3: "One-click cleanup", compRow4: "npm / Docker / Xcode caches", compRow5: "No account required", compRow6: "Zero data collection", compRow7: "Open source",
+        compRow1: "Price", compRow2: "App size", compRow3: "One-click cleanup", compRow4: "npm / Docker / Xcode caches", compRow5: "No account required", compRow6: "Zero data collection", compRow7: "Open source", compRow8: "App uninstaller",
         compFree: "Free", compBuiltIn: "Built-in",
         cliBadge: "For developers", cliTitle: "Works without opening a window", cliDesc: "macflow-cli is a standalone binary that shares the same Rust core as the desktop app. Run it in CI, cron jobs, or just when you prefer the terminal.",
         cliScan: "Scan only, no changes", cliCache: "Scan and clean all safe items", cliHelp: "Full help",

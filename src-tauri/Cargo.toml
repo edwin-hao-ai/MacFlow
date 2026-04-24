@@ -43,6 +43,7 @@ dirs = "5"
 rusqlite = { version = "0.32", features = ["bundled", "chrono"] }
 rayon = "1"
 which = "7"
+base64 = "0.22"
 
 [profile.release]
 panic = "abort"

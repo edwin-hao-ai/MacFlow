@@ -1,14 +1,18 @@
+pub mod app_scanner;
 pub mod applications;
 pub mod cache_cleaner;
 pub mod cache_scanner;
+pub mod dev_tool_rules;
 pub mod docker;
 pub mod monitor;
 pub mod ports;
 pub mod process_ops;
 pub mod process_safety;
+pub mod residue_scanner;
 pub mod scanner;
 pub mod storage;
 pub mod tray;
+pub mod uninstaller;
 pub mod whitelist;
 
 // CLI-friendly re-exports
@@ -21,12 +25,14 @@ pub fn run_tauri() {
 
 use cache_cleaner::CleanSummary;
 use cache_scanner::{CacheItem, CacheScanResult};
+use residue_scanner::AppResidue;
 use scanner::{ScanResult, SystemHealth};
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
 use storage::{HistoryEntry, Storage, WhitelistEntry};
 use sysinfo::System;
 use tauri::{Manager, State, WindowEvent};
+use uninstaller::{UninstallReport, UninstallTarget};
 
 pub struct AppState {
     pub sys: Mutex<System>,
@@ -228,6 +234,82 @@ async fn clean_cache(
     Ok(summary)
 }
 
+// ========== 应用卸载 ==========
+
+/// 扫描已安装应用列表
+#[tauri::command]
+async fn scan_installed_apps(state: State<'_, AppState>) -> Result<Vec<app_scanner::InstalledApp>, String> {
+    let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
+    Ok(app_scanner::scan_installed_apps(&mut sys))
+}
+
+/// 扫描指定应用的残留文件
+#[tauri::command]
+async fn scan_app_residues(bundle_id: String, app_name: String) -> Result<AppResidue, String> {
+    Ok(residue_scanner::scan_residues(&bundle_id, &app_name))
+}
+
+/// 批量卸载应用（移至废纸篓）
+#[tauri::command]
+async fn uninstall_apps(
+    state: State<'_, AppState>,
+    targets: Vec<UninstallTarget>,
+) -> Result<Vec<UninstallReport>, String> {
+    let mut reports = Vec::new();
+    for target in &targets {
+        let report = uninstaller::uninstall_app(target).await;
+        // 记录卸载历史
+        let detail = serde_json::json!({
+            "moved": report.moved_count,
+            "failed": report.failed_count,
+        })
+        .to_string();
+        let _ = state.storage.log_history(
+            "app_uninstall",
+            &format!("{} ({})", report.app_name, report.bundle_id),
+            report.total_freed_bytes,
+            report.failed_count == 0,
+            &detail,
+        );
+        reports.push(report);
+    }
+    Ok(reports)
+}
+
+/// 检查应用是否正在运行
+#[tauri::command]
+async fn check_app_running(
+    state: State<'_, AppState>,
+    bundle_path: String,
+) -> Result<bool, String> {
+    let mut sys = state.sys.lock().map_err(|e| e.to_string())?;
+    Ok(uninstaller::is_app_running(&bundle_path, &mut sys))
+}
+
+/// 退出应用并执行卸载
+#[tauri::command]
+async fn quit_and_uninstall(
+    state: State<'_, AppState>,
+    app_name: String,
+    target: UninstallTarget,
+) -> Result<UninstallReport, String> {
+    let report = uninstaller::quit_and_uninstall(&app_name, &target).await?;
+    // 记录卸载历史
+    let detail = serde_json::json!({
+        "moved": report.moved_count,
+        "failed": report.failed_count,
+    })
+    .to_string();
+    let _ = state.storage.log_history(
+        "app_uninstall",
+        &format!("{} ({})", report.app_name, report.bundle_id),
+        report.total_freed_bytes,
+        report.failed_count == 0,
+        &detail,
+    );
+    Ok(report)
+}
+
 // ========== History & Whitelist ==========
 
 #[tauri::command]
@@ -337,6 +419,11 @@ pub fn run() {
             docker_remove_container,
             docker_remove_volume,
             docker_prune_all,
+            scan_installed_apps,
+            scan_app_residues,
+            uninstall_apps,
+            check_app_running,
+            quit_and_uninstall,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
