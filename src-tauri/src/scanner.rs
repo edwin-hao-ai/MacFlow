@@ -329,9 +329,10 @@ fn classify_one(
     let mem_mb = proc.memory() as f64 / 1024.0 / 1024.0;
     let status = proc.status();
 
-    // 动态门槛：按系统总内存的百分比（避免在 8GB 机器上门槛过高）
-    let hog_mem_threshold = (total_mem_mb * 0.05).max(400.0); // 8GB→400MB, 32GB→1.6GB
-    let idle_mem_threshold = (total_mem_mb * 0.02).max(150.0); // 8GB→163MB
+    // 动态门槛：按系统总内存的百分比
+    // 8GB 机器上 hog=200MB, idle=80MB，让更多内存大户可见
+    let hog_mem_threshold = (total_mem_mb * 0.025).max(200.0);
+    let idle_mem_threshold = (total_mem_mb * 0.01).max(80.0);
 
     // —— 第一优先：僵尸进程，100% 可清理 ——
     if matches!(status, ProcessStatus::Zombie) {
@@ -360,8 +361,8 @@ fn classify_one(
         }
 
         // 父进程 / 多进程族 —— 仍然展示（用户需要感知内存占用），但固定 Low 风险 + 不默认选中
-        // 只有显著的才显示（避免一堆小的 Chrome Helper 刷屏）
-        if mem_mb >= hog_mem_threshold || cpu >= 20.0 {
+        // 门槛 100MB 或 CPU > 10%，让用户能看到内存大户
+        if mem_mb >= 100.0 || cpu >= 10.0 {
             let hint = if is_mp_family {
                 "多进程应用组件"
             } else {
@@ -396,6 +397,15 @@ fn classify_one(
             name,
             "node" | "python" | "python3" | "ruby" | "java" | "rustc" | "go" | "bun" | "deno"
         );
+    // 开发工具进程如果内存占用大，优先标记为 Hog（让用户看到内存大户）
+    if is_dev && mem_mb >= 200.0 {
+        return Classification {
+            kind: ProcessKind::Hog,
+            risk: Risk::Low,
+            default_select: false,
+            reason: format!("{} · {:.0}MB（开发工具进程，内存占用较高）", name, mem_mb),
+        };
+    }
     if is_dev {
         return Classification {
             kind: ProcessKind::Dev,
@@ -423,9 +433,9 @@ fn classify_one(
         };
     }
 
-    // 长期闲置：低活动 + 中等内存 + 已运行较久（门槛降到 20 分钟）
+    // 长期闲置：低活动 + 中等内存 + 已运行较久（门槛 100MB + 20 分钟）
     let uptime_min = crate::process_safety::process_uptime_secs(proc) / 60;
-    if cpu < 0.5 && mem_mb >= idle_mem_threshold && uptime_min > 20 {
+    if cpu < 0.5 && mem_mb >= 100.0 && uptime_min > 20 {
         return Classification {
             kind: ProcessKind::Idle,
             risk: Risk::Low,
