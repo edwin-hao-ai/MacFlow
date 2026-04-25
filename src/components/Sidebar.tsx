@@ -38,7 +38,7 @@ const Sidebar: Component<Props> = (props) => {
   const { t } = useI18n();
   return (
     <aside class="w-[200px] flex flex-col border-r border-black/5 dark:border-white/5 bg-[rgb(var(--bg-sidebar))/var(--bg-sidebar-alpha)]">
-      <div class="drag-region h-13 flex items-end pb-2 px-5">
+      <div class="drag-region h-13 flex items-end pb-2 px-5" data-tauri-drag-region>
         <div class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm">
             <Activity size={13} class="text-white" />

@@ -34,12 +34,12 @@ const App: Component = () => {
     <div class="flex h-full bg-[rgb(var(--bg-app))/var(--bg-app-alpha)]">
       <Sidebar current={view()} onChange={setView} />
       <main class="flex-1 flex flex-col min-w-0">
-        <div class="drag-region h-12 flex items-center px-6 border-b border-black/5 dark:border-white/5">
+        <div class="drag-region h-12 flex items-center px-6 border-b border-black/5 dark:border-white/5" data-tauri-drag-region>
           <h1 class="text-sm font-medium text-zinc-500">
             {t(`nav.${view()}`)}
           </h1>
         </div>
-        <div class="flex-1 min-h-0 no-drag">
+        <div class="flex-1 min-h-0 overflow-hidden no-drag">
           <TabPanel id="scan" active={view()}><ScanView /></TabPanel>
           <TabPanel id="process" active={view()}><ProcessView /></TabPanel>
           <TabPanel id="applications" active={view()}><ApplicationsView /></TabPanel>
