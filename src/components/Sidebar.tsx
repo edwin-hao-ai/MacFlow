@@ -9,6 +9,7 @@ import {
   Trash2,
 } from "lucide-solid";
 import { useI18n } from "@/i18n";
+import { handleWindowDrag } from "@/lib/window-drag";
 
 export type ViewId =
   | "scan"
@@ -37,7 +38,11 @@ const items: { id: ViewId; icon: Component<{ size?: number }> }[] = [
 const Sidebar: Component<Props> = (props) => {
   const { t } = useI18n();
   return (
-    <aside class="drag-region w-[200px] flex flex-col border-r border-black/5 dark:border-white/5 bg-[rgb(var(--bg-sidebar))/var(--bg-sidebar-alpha)]" data-tauri-drag-region>
+    <aside
+      class="drag-region w-[200px] flex flex-col border-r border-black/5 dark:border-white/5 bg-[rgb(var(--bg-sidebar))/var(--bg-sidebar-alpha)]"
+      data-tauri-drag-region
+      onMouseDown={handleWindowDrag}
+    >
       <div class="h-13 flex items-end pb-2 px-5">
         <div class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm">

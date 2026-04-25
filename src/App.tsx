@@ -8,6 +8,7 @@ import ProcessView from "@/views/ProcessView";
 import ApplicationsView from "@/views/ApplicationsView";
 import UninstallerView from "@/views/UninstallerView";
 import { listen } from "@tauri-apps/api/event";
+import { handleWindowDrag } from "@/lib/window-drag";
 import { useI18n } from "@/i18n";
 
 /** 用 CSS display 切换的 tab 面板，组件始终挂载不丢状态 */
@@ -34,8 +35,12 @@ const App: Component = () => {
     <div class="flex h-full bg-[rgb(var(--bg-app))/var(--bg-app-alpha)]">
       <Sidebar current={view()} onChange={setView} />
       <main class="flex-1 flex flex-col min-w-0">
-        <div class="drag-region h-12 flex items-center px-6 border-b border-black/5 dark:border-white/5" data-tauri-drag-region>
-          <h1 class="text-sm font-medium text-zinc-500 no-drag pointer-events-none">
+        <div
+          class="drag-region h-12 flex items-center px-6 border-b border-black/5 dark:border-white/5"
+          data-tauri-drag-region
+          onMouseDown={handleWindowDrag}
+        >
+          <h1 class="text-sm font-medium text-zinc-500 pointer-events-none">
             {t(`nav.${view()}`)}
           </h1>
         </div>
