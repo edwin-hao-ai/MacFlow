@@ -19,5 +19,9 @@
     <!-- 通知中心权限 -->
     <key>com.apple.security.personal-information.notifications</key>
     <true/>
+    <!-- 允许发送 AppleEvent（osascript "tell application X to quit" 必需）
+         没有这个 Hardened Runtime 会静默拒绝，导致「退出应用」按钮失效 -->
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
 </dict>
 </plist>

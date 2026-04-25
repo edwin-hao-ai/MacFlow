@@ -37,6 +37,17 @@ if ! codesign --force --options runtime --timestamp \
   TIMESTAMP_FLAG="--timestamp=none"
 fi
 
+echo "==> 注入 Info.plist 自定义键（必须在签名之前，否则签名失效）..."
+INFO_PLIST="$APP_PATH/Contents/Info.plist"
+# NSAppleEventsUsageDescription：osascript 'tell application X to quit' 必需
+# Hardened Runtime 下没有这个 key，AppleEvents 调用会被静默拒绝（macOS 14+）
+if ! /usr/libexec/PlistBuddy -c "Print :NSAppleEventsUsageDescription" "$INFO_PLIST" >/dev/null 2>&1; then
+  /usr/libexec/PlistBuddy -c "Add :NSAppleEventsUsageDescription string 'MacFlow 需要发送 AppleEvent 来优雅退出其他应用程序。'" "$INFO_PLIST"
+  echo "    ✓ 已注入 NSAppleEventsUsageDescription"
+else
+  echo "    ✓ NSAppleEventsUsageDescription 已存在，跳过"
+fi
+
 echo "==> 签名 .app 内所有二进制..."
 for f in "$APP_PATH/Contents/MacOS"/*; do
   if [ -f "$f" ] && [ -x "$f" ]; then
