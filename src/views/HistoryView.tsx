@@ -31,7 +31,8 @@ const HistoryView: Component = () => {
           : op;
 
   return (
-    <div class="flex flex-col gap-5 p-6 h-full overflow-y-auto">
+    <div class="h-full overflow-y-auto">
+    <div class="flex flex-col gap-5 p-6">
       <div class="card p-6">
         <h2 class="text-base font-semibold">{t("history.title")}</h2>
         <p class="text-xs text-zinc-500 mt-0.5">{t("history.subtitle")}</p>
@@ -118,6 +119,7 @@ const HistoryView: Component = () => {
           </div>
         </Show>
       </Show>
+    </div>
     </div>
   );
 };

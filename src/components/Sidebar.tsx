@@ -37,8 +37,8 @@ const items: { id: ViewId; icon: Component<{ size?: number }> }[] = [
 const Sidebar: Component<Props> = (props) => {
   const { t } = useI18n();
   return (
-    <aside class="w-[200px] flex flex-col border-r border-black/5 dark:border-white/5 bg-[rgb(var(--bg-sidebar))/var(--bg-sidebar-alpha)]">
-      <div class="drag-region h-13 flex items-end pb-2 px-5" data-tauri-drag-region>
+    <aside class="drag-region w-[200px] flex flex-col border-r border-black/5 dark:border-white/5 bg-[rgb(var(--bg-sidebar))/var(--bg-sidebar-alpha)]" data-tauri-drag-region>
+      <div class="h-13 flex items-end pb-2 px-5">
         <div class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-sm">
             <Activity size={13} class="text-white" />
@@ -63,7 +63,7 @@ const Sidebar: Component<Props> = (props) => {
           )}
         </For>
       </nav>
-      <div class="mt-auto p-3 text-[10px] text-zinc-400">v0.1.0</div>
+      <div class="mt-auto p-3 text-[10px] text-zinc-400 no-drag">v0.1.1</div>
     </aside>
   );
 };
