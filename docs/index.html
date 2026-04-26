@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MacFlow — Keep your Mac fast, without the bloat</title>
+    <title>MacSlim — Keep your Mac fast, without the bloat</title>
     <meta
       name="description"
       content="One-click Mac cleaner for everyone. Cleans app caches, npm, Docker, Xcode, Homebrew and more. Built with Rust + Tauri, not Electron."
     />
-    <meta property="og:title" content="MacFlow — Keep your Mac fast" />
+    <meta property="og:title" content="MacSlim — Keep your Mac fast" />
     <meta
       property="og:description"
       content="Free · No subscription · No account · Runs 100% locally"
@@ -229,20 +229,20 @@
     >
       <nav class="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
         <a href="#top" class="flex items-center gap-2">
-          <img src="assets/logo.png" alt="MacFlow" class="w-7 h-7 rounded-lg" />
-          <span class="font-semibold tracking-tight">MacFlow</span>
+          <img src="assets/logo.png" alt="MacSlim" class="w-7 h-7 rounded-lg" />
+          <span class="font-semibold tracking-tight">MacSlim</span>
         </a>
         <div class="hidden md:flex items-center gap-6 text-sm text-zinc-600 dark:text-zinc-400">
           <a href="#features" class="hover:text-zinc-900 dark:hover:text-zinc-100">Features</a>
           <a href="#safety" class="hover:text-zinc-900 dark:hover:text-zinc-100">Safety</a>
           <a href="#faq" class="hover:text-zinc-900 dark:hover:text-zinc-100">FAQ</a>
-          <a href="https://github.com/edwin-hao-ai/MacFlow" class="hover:text-zinc-900 dark:hover:text-zinc-100">GitHub</a>
+          <a href="https://github.com/edwin-hao-ai/MacSlim" class="hover:text-zinc-900 dark:hover:text-zinc-100">GitHub</a>
         </div>
         <div class="flex items-center gap-3">
           <button id="lang-toggle" onclick="toggleLang()" class="text-xs px-2.5 py-1 rounded-md border border-black/10 dark:border-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer select-none">
             🌐
           </button>
-          <a href="https://github.com/edwin-hao-ai/MacFlow/releases/latest/download/MacFlow_0.1.2_aarch64.dmg" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" id="nav-download">
+          <a href="https://github.com/edwin-hao-ai/MacSlim/releases/latest/download/MacSlim_0.2.0_aarch64.dmg" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" id="nav-download">
             Download
           </a>
         </div>
@@ -257,7 +257,7 @@
           <div class="flex justify-center mb-6">
             <span class="badge">
               <span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
-              v0.1.2 · Free · No subscription
+              v0.2.0 · Free · No subscription
             </span>
           </div>
           <h1 class="text-center text-4xl md:text-6xl font-bold tracking-tight">
@@ -269,13 +269,13 @@
             One-click cleanup for app caches, junk files, and developer tools. Built with Rust + Tauri. Not Electron. ~12 MB total.
           </p>
           <div class="mt-10 flex flex-wrap justify-center gap-3">
-            <a href="https://github.com/edwin-hao-ai/MacFlow/releases/latest/download/MacFlow_0.1.2_aarch64.dmg" class="btn-primary" id="hero-download">
+            <a href="https://github.com/edwin-hao-ai/MacSlim/releases/latest/download/MacSlim_0.2.0_aarch64.dmg" class="btn-primary" id="hero-download">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
               </svg>
               <span id="hero-download-label">Download for macOS — Free</span>
             </a>
-            <a href="https://github.com/edwin-hao-ai/MacFlow" class="btn-ghost">
+            <a href="https://github.com/edwin-hao-ai/MacSlim" class="btn-ghost">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
               </svg>
@@ -283,7 +283,7 @@
             </a>
           </div>
           <p class="mt-4 text-center text-xs text-zinc-500" id="hero-download-note">
-            macOS 13+ · Apple Silicon · <a href="https://github.com/edwin-hao-ai/MacFlow/releases/latest/download/MacFlow_0.1.2_x64.dmg" class="underline">Intel version</a> · Open source
+            macOS 13+ · Apple Silicon · <a href="https://github.com/edwin-hao-ai/MacSlim/releases/latest/download/MacSlim_0.2.0_x64.dmg" class="underline">Intel version</a> · Open source
           </p>
 
           <!-- Stats row -->
@@ -364,7 +364,7 @@
             Cleans what's safe. Leaves everything else alone.
           </h2>
           <p class="text-zinc-600 dark:text-zinc-400 mt-3 max-w-xl mx-auto" data-i18n="safetySubtitle">
-            The worst thing a cleaner can do is delete something you needed. MacFlow is built around that fear.
+            The worst thing a cleaner can do is delete something you needed. MacSlim is built around that fear.
           </p>
         </div>
 
@@ -374,14 +374,14 @@
               <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
             </div>
             <h3 class="font-semibold" data-i18n="safety1Title">Won't touch active tools</h3>
-            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed" data-i18n="safety1Desc">If you're running npm install, building in Xcode, or compiling Rust code right now — MacFlow won't touch those caches. It checks first, every time.</p>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed" data-i18n="safety1Desc">If you're running npm install, building in Xcode, or compiling Rust code right now — MacSlim won't touch those caches. It checks first, every time.</p>
           </div>
           <div class="card p-6">
             <div class="w-10 h-10 rounded-xl bg-success-500/10 flex items-center justify-center mb-4">
               <svg class="w-5 h-5 text-success-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
             <h3 class="font-semibold" data-i18n="safety2Title">Strict path limits</h3>
-            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed" data-i18n="safety2Desc">MacFlow can only delete from a fixed list of known-safe locations. Your home folder, Documents, Desktop, and Downloads are permanently off-limits. No exceptions.</p>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed" data-i18n="safety2Desc">MacSlim can only delete from a fixed list of known-safe locations. Your home folder, Documents, Desktop, and Downloads are permanently off-limits. No exceptions.</p>
           </div>
           <div class="card p-6">
             <div class="w-10 h-10 rounded-xl bg-warning-500/10 flex items-center justify-center mb-4">
@@ -395,14 +395,14 @@
         <!-- Comparison table -->
         <div class="card overflow-hidden">
           <div class="px-6 py-4 border-b border-black/5 dark:border-white/5">
-            <h3 class="font-semibold text-base" data-i18n="compTitle">How MacFlow compares</h3>
+            <h3 class="font-semibold text-base" data-i18n="compTitle">How MacSlim compares</h3>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b border-black/5 dark:border-white/5">
                   <th class="text-left px-6 py-3 text-zinc-500 font-medium" data-i18n="compFeature">Feature</th>
-                  <th class="px-6 py-3 text-center font-semibold text-brand-600">MacFlow</th>
+                  <th class="px-6 py-3 text-center font-semibold text-brand-600">MacSlim</th>
                   <th class="px-6 py-3 text-center text-zinc-500 font-medium">CleanMyMac</th>
                   <th class="px-6 py-3 text-center text-zinc-500 font-medium" data-i18n="compActivityMonitor">Activity Monitor</th>
                 </tr>
@@ -470,8 +470,8 @@
         <div class="grid md:grid-cols-2 gap-12 items-center">
           <div class="order-2 md:order-1">
             <div class="terminal">
-              <div><span class="prompt">$</span> macflow-cli --scan</div>
-              <div class="muted">MacFlow CLI v0.1.2</div>
+              <div><span class="prompt">$</span> macslim-cli --scan</div>
+              <div class="muted">MacSlim CLI v0.2.0</div>
               <div class="muted">==========================================</div>
               <div>System: CPU <span class="highlight">27.6%</span> Mem <span class="highlight">75.1%</span> Disk <span class="highlight">82.5%</span></div>
               <div class="muted">Scanning caches...</div>
@@ -492,12 +492,12 @@
               Works without opening a window
             </h2>
             <p class="mt-4 text-zinc-600 dark:text-zinc-400 leading-relaxed" data-i18n="cliDesc">
-              macflow-cli is a standalone binary that shares the same Rust core as the desktop app. Run it in CI, cron jobs, or just when you prefer the terminal.
+              macslim-cli is a standalone binary that shares the same Rust core as the desktop app. Run it in CI, cron jobs, or just when you prefer the terminal.
             </p>
             <div class="mt-6 space-y-2">
-              <div data-code cmd="macflow-cli --scan" data-i18n-desc="cliScan"></div>
-              <div data-code cmd="macflow-cli --cache" data-i18n-desc="cliCache"></div>
-              <div data-code cmd="macflow-cli --help" data-i18n-desc="cliHelp"></div>
+              <div data-code cmd="macslim-cli --scan" data-i18n-desc="cliScan"></div>
+              <div data-code cmd="macslim-cli --cache" data-i18n-desc="cliCache"></div>
+              <div data-code cmd="macslim-cli --help" data-i18n-desc="cliHelp"></div>
             </div>
           </div>
         </div>
@@ -506,7 +506,7 @@
       <!-- Download CTA -->
       <section class="max-w-6xl mx-auto px-5 py-24 border-t border-black/5 dark:border-white/5">
         <div class="card p-10 md:p-14 text-center">
-          <img src="assets/logo.png" alt="MacFlow" class="w-20 h-20 rounded-2xl mx-auto shadow-glow" />
+          <img src="assets/logo.png" alt="MacSlim" class="w-20 h-20 rounded-2xl mx-auto shadow-glow" />
           <h2 class="text-3xl md:text-4xl font-bold mt-6 tracking-tight" data-i18n="ctaTitle">
             Free your Mac. Right now.
           </h2>
@@ -514,13 +514,13 @@
             Free · No ads · No account · No subscription
           </p>
           <div class="mt-8 flex flex-wrap justify-center gap-3">
-            <a href="https://github.com/edwin-hao-ai/MacFlow/releases/latest/download/MacFlow_0.1.2_aarch64.dmg" class="btn-primary" id="cta-download">
+            <a href="https://github.com/edwin-hao-ai/MacSlim/releases/latest/download/MacSlim_0.2.0_aarch64.dmg" class="btn-primary" id="cta-download">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
               <span data-i18n="ctaBtn">Download for macOS — Free</span>
             </a>
           </div>
           <p class="mt-4 text-xs text-zinc-500">
-            macOS 13+ · Apple Silicon · <a href="https://github.com/edwin-hao-ai/MacFlow/releases/latest/download/MacFlow_0.1.2_x64.dmg" class="underline" data-i18n="intelLink">Intel version</a>
+            macOS 13+ · Apple Silicon · <a href="https://github.com/edwin-hao-ai/MacSlim/releases/latest/download/MacSlim_0.2.0_x64.dmg" class="underline" data-i18n="intelLink">Intel version</a>
           </p>
         </div>
       </section>
@@ -547,14 +547,14 @@
       <div class="max-w-6xl mx-auto px-5 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-2">
           <img src="assets/logo.png" class="w-5 h-5 rounded" alt="" />
-          <span>MacFlow v0.1.2</span>
+          <span>MacSlim v0.2.0</span>
           <span class="text-zinc-400">·</span>
           <span>© 2026</span>
         </div>
         <div class="flex gap-5">
           <a href="#features" class="hover:text-zinc-700 dark:hover:text-zinc-300">Features</a>
           <a href="#faq" class="hover:text-zinc-700 dark:hover:text-zinc-300">FAQ</a>
-          <a href="https://github.com/edwin-hao-ai/MacFlow" class="hover:text-zinc-700 dark:hover:text-zinc-300">GitHub</a>
+          <a href="https://github.com/edwin-hao-ai/MacSlim" class="hover:text-zinc-700 dark:hover:text-zinc-300">GitHub</a>
         </div>
       </div>
     </footer>
@@ -621,21 +621,21 @@
         feat6Title: "极致轻量", feat6Desc: "总共约 12 MB。CleanMyMac 超过 200 MB。用 Rust + Tauri 构建，不是 Electron——不捆绑 Chromium，不浪费资源。200ms 内启动。",
         feat7Title: "应用卸载", feat7Desc: "完整卸载应用及其残留文件。内置 Xcode、VS Code、Docker Desktop、JetBrains、Android Studio 深度清理规则。文件移至废纸篓，不直接删除。",
         feat8Title: "Docker 深度管理", feat8Desc: "逐个管理 Docker 镜像、容器和卷。清楚看到哪些是悬空的、哪些已停止、哪些未使用。比 Docker Desktop 自带界面更轻。",
-        safetyBadge: "安全设计", safetyTitle: "只清该清的，其他一概不动", safetySubtitle: "清理工具最怕的是误删。MacFlow 从设计上就把这个风险降到最低。",
-        safety1Title: "不碰正在使用的工具", safety1Desc: "如果你正在跑 npm install、在 Xcode 里构建、或者在编译 Rust 代码——MacFlow 不会碰这些缓存。每次都会先检查。",
-        safety2Title: "严格的路径限制", safety2Desc: "MacFlow 只能删除固定的已知安全路径。你的主目录、文稿、桌面、下载文件夹永远不会被触碰，没有例外。",
+        safetyBadge: "安全设计", safetyTitle: "只清该清的，其他一概不动", safetySubtitle: "清理工具最怕的是误删。MacSlim 从设计上就把这个风险降到最低。",
+        safety1Title: "不碰正在使用的工具", safety1Desc: "如果你正在跑 npm install、在 Xcode 里构建、或者在编译 Rust 代码——MacSlim 不会碰这些缓存。每次都会先检查。",
+        safety2Title: "严格的路径限制", safety2Desc: "MacSlim 只能删除固定的已知安全路径。你的主目录、文稿、桌面、下载文件夹永远不会被触碰，没有例外。",
         safety3Title: "完整的操作历史", safety3Desc: "每次清理都会在本地记录时间、文件大小和结果。你随时可以查看清理了什么——没有任何操作是悄悄进行的。",
         compTitle: "和竞品对比", compFeature: "功能", compActivityMonitor: "活动监视器",
         compRow1: "价格", compRow2: "应用大小", compRow3: "一键清理", compRow4: "npm / Docker / Xcode 缓存", compRow5: "无需账号", compRow6: "零数据收集", compRow7: "开源", compRow8: "应用卸载",
         compFree: "免费", compBuiltIn: "系统内置",
-        cliBadge: "面向开发者", cliTitle: "不用打开窗口也能用", cliDesc: "macflow-cli 是一个独立的命令行工具，和桌面端共享同一套 Rust 核心。可以在 CI、定时任务或终端里直接使用。",
+        cliBadge: "面向开发者", cliTitle: "不用打开窗口也能用", cliDesc: "macslim-cli 是一个独立的命令行工具，和桌面端共享同一套 Rust 核心。可以在 CI、定时任务或终端里直接使用。",
         cliScan: "扫描，不执行清理", cliCache: "扫描并清理所有安全项", cliHelp: "完整帮助",
         ctaTitle: "释放你的 Mac，就是现在", ctaSubtitle: "免费 · 无广告 · 无账号 · 无订阅", ctaBtn: "下载 macOS 版 — 免费", intelLink: "Intel 版本",
         faqs: [
-          { q: "会不会误删我正在用的项目缓存？", a: "不会。MacFlow 在扫描前会检测 npm / pnpm / yarn / docker build / xcodebuild / cargo build / go / pip 是否正在运行。只要检测到有一个在跑，对应的缓存完全不会出现在清理列表里。" },
-          { q: "为什么比 CleanMyMac 小那么多？", a: "CleanMyMac 基于 Electron，捆绑了 Chromium 运行时。MacFlow 用 Rust + SolidJS + Tauri，编译产物约 12 MB。架构选择不同而已。" },
+          { q: "会不会误删我正在用的项目缓存？", a: "不会。MacSlim 在扫描前会检测 npm / pnpm / yarn / docker build / xcodebuild / cargo build / go / pip 是否正在运行。只要检测到有一个在跑，对应的缓存完全不会出现在清理列表里。" },
+          { q: "为什么比 CleanMyMac 小那么多？", a: "CleanMyMac 基于 Electron，捆绑了 Chromium 运行时。MacSlim 用 Rust + SolidJS + Tauri，编译产物约 12 MB。架构选择不同而已。" },
           { q: "免费版有什么限制？", a: "手动清理完全无限制。Pro 版在规划中，收费的是「持续价值」功能：自动监控、定时清理、多设备白名单同步。一次性清理永远免费。" },
-          { q: "操作可以撤销吗？", a: "缓存清理本质不可逆。MacFlow 不承诺「一键回滚」，而是提供操作日志，清理后显示如何重新下载需要的包。" },
+          { q: "操作可以撤销吗？", a: "缓存清理本质不可逆。MacSlim 不承诺「一键回滚」，而是提供操作日志，清理后显示如何重新下载需要的包。" },
           { q: "会收集数据吗？", a: "不会。没有后端，没有 telemetry，没有崩溃上报。所有数据存在本地 SQLite 数据库，完全离线工作。" },
         ]
       } : {
@@ -650,21 +650,21 @@
         feat6Title: "Incredibly Lightweight", feat6Desc: "~12 MB total. CleanMyMac is 200+ MB. Built with Rust + Tauri instead of Electron — no bundled Chromium, no wasted resources. Starts in under 200ms.",
         feat7Title: "App Uninstaller", feat7Desc: "Completely remove apps and their leftover files. Deep clean rules for Xcode, VS Code, Docker Desktop, JetBrains IDEs, and Android Studio. Files go to Trash, not deleted permanently.",
         feat8Title: "Docker Deep View", feat8Desc: "Manage Docker images, containers, and volumes individually. See what's dangling, what's stopped, what's unused. Lighter than Docker Desktop's built-in UI.",
-        safetyBadge: "Safe by design", safetyTitle: "Cleans what's safe. Leaves everything else alone.", safetySubtitle: "The worst thing a cleaner can do is delete something you needed. MacFlow is built around that fear.",
-        safety1Title: "Won't touch active tools", safety1Desc: "If you're running npm install, building in Xcode, or compiling Rust code right now — MacFlow won't touch those caches. It checks first, every time.",
-        safety2Title: "Strict path limits", safety2Desc: "MacFlow can only delete from a fixed list of known-safe locations. Your home folder, Documents, Desktop, and Downloads are permanently off-limits. No exceptions.",
+        safetyBadge: "Safe by design", safetyTitle: "Cleans what's safe. Leaves everything else alone.", safetySubtitle: "The worst thing a cleaner can do is delete something you needed. MacSlim is built around that fear.",
+        safety1Title: "Won't touch active tools", safety1Desc: "If you're running npm install, building in Xcode, or compiling Rust code right now — MacSlim won't touch those caches. It checks first, every time.",
+        safety2Title: "Strict path limits", safety2Desc: "MacSlim can only delete from a fixed list of known-safe locations. Your home folder, Documents, Desktop, and Downloads are permanently off-limits. No exceptions.",
         safety3Title: "Full history log", safety3Desc: "Every cleanup is logged locally with timestamps, file sizes, and results. You can always see exactly what was cleaned and when — nothing happens silently.",
-        compTitle: "How MacFlow compares", compFeature: "Feature", compActivityMonitor: "Activity Monitor",
+        compTitle: "How MacSlim compares", compFeature: "Feature", compActivityMonitor: "Activity Monitor",
         compRow1: "Price", compRow2: "App size", compRow3: "One-click cleanup", compRow4: "npm / Docker / Xcode caches", compRow5: "No account required", compRow6: "Zero data collection", compRow7: "Open source", compRow8: "App uninstaller",
         compFree: "Free", compBuiltIn: "Built-in",
-        cliBadge: "For developers", cliTitle: "Works without opening a window", cliDesc: "macflow-cli is a standalone binary that shares the same Rust core as the desktop app. Run it in CI, cron jobs, or just when you prefer the terminal.",
+        cliBadge: "For developers", cliTitle: "Works without opening a window", cliDesc: "macslim-cli is a standalone binary that shares the same Rust core as the desktop app. Run it in CI, cron jobs, or just when you prefer the terminal.",
         cliScan: "Scan only, no changes", cliCache: "Scan and clean all safe items", cliHelp: "Full help",
         ctaTitle: "Free your Mac. Right now.", ctaSubtitle: "Free · No ads · No account · No subscription", ctaBtn: "Download for macOS — Free", intelLink: "Intel version",
         faqs: [
-          { q: "Will it accidentally delete files I need?", a: "No. MacFlow checks whether npm, pnpm, yarn, docker build, xcodebuild, cargo, go, or pip is running before scanning. If any of them are active, their caches won't appear in the list at all." },
-          { q: "Why is it so much smaller than CleanMyMac?", a: "CleanMyMac bundles Electron and Chromium. MacFlow uses Rust + SolidJS + Tauri — the compiled binary is ~12 MB. It's an architecture choice." },
+          { q: "Will it accidentally delete files I need?", a: "No. MacSlim checks whether npm, pnpm, yarn, docker build, xcodebuild, cargo, go, or pip is running before scanning. If any of them are active, their caches won't appear in the list at all." },
+          { q: "Why is it so much smaller than CleanMyMac?", a: "CleanMyMac bundles Electron and Chromium. MacSlim uses Rust + SolidJS + Tauri — the compiled binary is ~12 MB. It's an architecture choice." },
           { q: "What are the limits of the free version?", a: "Manual cleanup is completely unlimited. Pro features (planned) are about continuous value: auto-monitoring, scheduled cleanup, multi-device whitelist sync. One-time cleanup is always free." },
-          { q: "Can I undo a cleanup?", a: "Cache cleanup is irreversible by nature. MacFlow doesn't promise one-click rollback — instead it provides an operation log and shows you how to re-download what you need." },
+          { q: "Can I undo a cleanup?", a: "Cache cleanup is irreversible by nature. MacSlim doesn't promise one-click rollback — instead it provides an operation log and shows you how to re-download what you need." },
           { q: "Does it collect any data?", a: "No. No backend, no telemetry, no crash reporting. All data lives in a local SQLite database and works completely offline." },
         ]
       };

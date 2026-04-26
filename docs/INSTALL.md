@@ -1,6 +1,6 @@
-# 从源码构建 MacFlow
+# 从源码构建 MacSlim
 
-本文档针对想自己编译 MacFlow 或为项目贡献代码的用户。如果只想用，请直接下载 [Releases](https://github.com/edwinhao/macflow/releases)。
+本文档针对想自己编译 MacSlim 或为项目贡献代码的用户。如果只想用，请直接下载 [Releases](https://github.com/edwinhao/macslim/releases)。
 
 ## 前置环境
 
@@ -18,8 +18,8 @@
 ## 获取源码
 
 ```bash
-git clone https://github.com/edwinhao/macflow.git
-cd macflow
+git clone https://github.com/edwinhao/macslim.git
+cd macslim
 bun install
 ```
 
@@ -52,8 +52,8 @@ bun run bundle:universal
 
 ```
 src-tauri/target/{arch}/release/bundle/
-├── macos/MacFlow.app   # .app 包
-└── dmg/MacFlow_0.1.0_*.dmg   # DMG 分发包
+├── macos/MacSlim.app   # .app 包
+└── dmg/MacSlim_0.1.0_*.dmg   # DMG 分发包
 ```
 
 ## 签名 + 公证（可选）
@@ -62,7 +62,7 @@ src-tauri/target/{arch}/release/bundle/
 
 ```bash
 # 首次：把 Apple ID + App-Specific Password 存进 Keychain（一次性）
-xcrun notarytool store-credentials macflow-notary \
+xcrun notarytool store-credentials macslim-notary \
   --apple-id YOUR_APPLE_ID@example.com \
   --team-id YOUR_TEAM_ID \
   --password YOUR_APP_SPECIFIC_PASSWORD
@@ -79,7 +79,7 @@ xcrun notarytool store-credentials macflow-notary \
 A: 确保 `nix` 的 `user` feature 在 Cargo.toml 里打开。
 
 **Q: `bun run tauri dev` 报 Port 1420 已被占用？**  
-A: 有残留的前一次 dev 进程。`pkill -f "target/debug/macflow"; pkill -f "bin/vite"` 然后重跑。
+A: 有残留的前一次 dev 进程。`pkill -f "target/debug/macslim"; pkill -f "bin/vite"` 然后重跑。
 
 **Q: 签名报 `The timestamp service is not available`？**  
 A: Apple timestamp 服务偶发故障。可以：
@@ -95,7 +95,7 @@ A: 只修改 `src/` 的前端代码时，Vite 自动热更新，不需要重启 
 ## 目录结构
 
 ```
-macflow/
+macslim/
 ├── src/                  # SolidJS 前端
 │   ├── views/            # 各视图（ScanView、CacheView、HistoryView、SettingsView）
 │   ├── components/       # 可复用组件

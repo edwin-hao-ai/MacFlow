@@ -20,7 +20,7 @@ import {
 import { useI18n, type LocaleCode } from "@/i18n";
 import { getVersion } from "@tauri-apps/api/app";
 
-const PREFS_KEY = "macflow.prefs.v1";
+const PREFS_KEY = "macslim.prefs.v1";
 type Prefs = {
   notifyOnCleanComplete: boolean;
   cleanupSoundEnabled: boolean;

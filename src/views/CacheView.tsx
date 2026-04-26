@@ -39,7 +39,7 @@ import { useI18n, getT } from "@/i18n";
 
 function isNotifyEnabled(): boolean {
   try {
-    const raw = localStorage.getItem("macflow.prefs.v1");
+    const raw = localStorage.getItem("macslim.prefs.v1");
     if (!raw) return true;
     const p = JSON.parse(raw);
     return p?.notifyOnCleanComplete !== false;

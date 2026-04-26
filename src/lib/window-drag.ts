@@ -13,7 +13,9 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 export const handleWindowDrag = (e: MouseEvent) => {
   if (e.button !== 0) return;
   const target = e.target as HTMLElement;
-  if (target.closest("button, input, textarea, select, a, [data-no-drag]")) return;
+  // 排除：交互元素 + 卡片本体 + 列表项 + 任何带 [data-no-drag] 标记
+  // 这样主内容区的「卡片之间的 padding 间隙」可以拖动，卡片内部正常交互
+  if (target.closest("button, input, textarea, select, a, label, .card, li, [data-no-drag]")) return;
   e.preventDefault();
   void getCurrentWindow().startDragging();
 };

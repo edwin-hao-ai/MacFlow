@@ -393,7 +393,7 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             // 点 X 关闭 → 不退出应用，只把窗口藏起来，托盘保持驻留
-            // 真正退出通过托盘菜单「退出 MacFlow」
+            // 真正退出通过托盘菜单「退出 MacSlim」
             if let WindowEvent::CloseRequested { api, .. } = event {
                 let _ = window.hide();
                 api.prevent_close();

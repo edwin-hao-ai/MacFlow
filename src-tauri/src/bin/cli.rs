@@ -1,24 +1,24 @@
-//! MacFlow CLI —— 与桌面端共享核心逻辑
+//! MacSlim CLI —— 与桌面端共享核心逻辑
 //!
 //! 当前补齐的命令：
-//!   macflow-cli --scan
-//!   macflow-cli --cache
-//!   macflow-cli --disk
-//!   macflow-cli --npm
-//!   macflow-cli --xcode
-//!   macflow-cli --process [--scan]
-//!   macflow-cli --list
-//!   macflow-cli --docker [--scan]
-//!   macflow-cli --history
-//!   macflow-cli --whitelist list
-//!   macflow-cli --whitelist add <kind> <value> [note]
-//!   macflow-cli --whitelist remove <id>
+//!   macslim-cli --scan
+//!   macslim-cli --cache
+//!   macslim-cli --disk
+//!   macslim-cli --npm
+//!   macslim-cli --xcode
+//!   macslim-cli --process [--scan]
+//!   macslim-cli --list
+//!   macslim-cli --docker [--scan]
+//!   macslim-cli --history
+//!   macslim-cli --whitelist list
+//!   macslim-cli --whitelist add <kind> <value> [note]
+//!   macslim-cli --whitelist remove <id>
 
-use macflow_lib::cache_scanner::{CacheCategory, CacheItem};
-use macflow_lib::process_ops::graceful_kill;
-use macflow_lib::scanner::{self, ProcessInfo};
-use macflow_lib::storage::{HistoryEntry, Storage};
-use macflow_lib::{cache_cleaner_clean, cache_scanner_scan, scanner_read_health, run_tauri};
+use macslim_lib::cache_scanner::{CacheCategory, CacheItem};
+use macslim_lib::process_ops::graceful_kill;
+use macslim_lib::scanner::{self, ProcessInfo};
+use macslim_lib::storage::{HistoryEntry, Storage};
+use macslim_lib::{cache_cleaner_clean, cache_scanner_scan, scanner_read_health, run_tauri};
 use std::env;
 
 enum Command {
@@ -73,7 +73,7 @@ fn main() {
 
     match command {
         Command::Help => print_help(),
-        Command::Version => println!("macflow-cli {}", env!("CARGO_PKG_VERSION")),
+        Command::Version => println!("macslim-cli {}", env!("CARGO_PKG_VERSION")),
         Command::Scan => run_cache_scan(None, false),
         Command::Cache => run_cache_scan(None, true),
         Command::Disk { scan_only } => run_cache_scan(None, !scan_only),
@@ -153,37 +153,37 @@ fn parse_whitelist_args(args: &[String]) -> Result<Command, String> {
 
 fn print_help() {
     println!(
-        r#"MacFlow CLI {}
+        r#"MacSlim CLI {}
 
 用法:
-  macflow-cli              打开桌面应用（无参数）
-  macflow-cli --scan       扫描全部缓存项，不执行清理
-  macflow-cli --cache      清理默认选中的缓存项
-  macflow-cli --disk       清理默认选中的硬盘类缓存项
-  macflow-cli --disk --scan
+  macslim-cli              打开桌面应用（无参数）
+  macslim-cli --scan       扫描全部缓存项，不执行清理
+  macslim-cli --cache      清理默认选中的缓存项
+  macslim-cli --disk       清理默认选中的硬盘类缓存项
+  macslim-cli --disk --scan
                            仅扫描硬盘类缓存项
-  macflow-cli --npm        仅扫描/清理 Node 生态缓存（NPM/PNPM/Yarn/node_modules）
-  macflow-cli --npm --scan
+  macslim-cli --npm        仅扫描/清理 Node 生态缓存（NPM/PNPM/Yarn/node_modules）
+  macslim-cli --npm --scan
                            仅扫描 Node 生态缓存
-  macflow-cli --xcode      仅扫描/清理 Xcode 缓存
-  macflow-cli --xcode --scan
+  macslim-cli --xcode      仅扫描/清理 Xcode 缓存
+  macslim-cli --xcode --scan
                            仅扫描 Xcode 缓存
-  macflow-cli --process    扫描并清理默认选中的进程项
-  macflow-cli --process --scan
+  macslim-cli --process    扫描并清理默认选中的进程项
+  macslim-cli --process --scan
                            仅扫描进程项
-  macflow-cli --list       列出所有可优化进程（等价于 --process --scan）
-  macflow-cli --docker     扫描并清理默认选中的 Docker 项
-  macflow-cli --docker --scan
+  macslim-cli --list       列出所有可优化进程（等价于 --process --scan）
+  macslim-cli --docker     扫描并清理默认选中的 Docker 项
+  macslim-cli --docker --scan
                            仅扫描 Docker 项
-  macflow-cli --history    查看最近清理历史
-  macflow-cli --whitelist list
+  macslim-cli --history    查看最近清理历史
+  macslim-cli --whitelist list
                            查看白名单
-  macflow-cli --whitelist add <kind> <value> [note]
+  macslim-cli --whitelist add <kind> <value> [note]
                            添加白名单（kind 通常为 process）
-  macflow-cli --whitelist remove <id>
+  macslim-cli --whitelist remove <id>
                            删除白名单
-  macflow-cli --version    显示版本
-  macflow-cli --help       显示帮助"#,
+  macslim-cli --version    显示版本
+  macslim-cli --help       显示帮助"#,
         env!("CARGO_PKG_VERSION")
     );
 }
@@ -398,7 +398,7 @@ fn run_history() {
 }
 
 fn print_header() {
-    println!("MacFlow CLI v{}", env!("CARGO_PKG_VERSION"));
+    println!("MacSlim CLI v{}", env!("CARGO_PKG_VERSION"));
     println!("==========================================");
 }
 
@@ -473,11 +473,11 @@ fn print_history_entries(entries: &[HistoryEntry]) {
     }
 }
 
-fn safety_label(safety: &macflow_lib::cache_scanner::Safety) -> &'static str {
+fn safety_label(safety: &macslim_lib::cache_scanner::Safety) -> &'static str {
     match safety {
-        macflow_lib::cache_scanner::Safety::Safe => "安全",
-        macflow_lib::cache_scanner::Safety::Low => "低风险",
-        macflow_lib::cache_scanner::Safety::Medium => "谨慎",
+        macslim_lib::cache_scanner::Safety::Safe => "安全",
+        macslim_lib::cache_scanner::Safety::Low => "低风险",
+        macslim_lib::cache_scanner::Safety::Medium => "谨慎",
     }
 }
 

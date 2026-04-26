@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MacFlow release build + notarization 脚本
+# MacSlim release build + notarization 脚本
 # 用法: ./scripts/release.sh [arm|intel|universal]
 
 set -euo pipefail
@@ -7,7 +7,7 @@ set -euo pipefail
 TARGET="${1:-arm}"
 TEAM_ID="5XNDF727Y6"
 SIGNING_ID="Developer ID Application: Beijing VGO Co;Ltd (${TEAM_ID})"
-PROFILE_NAME="macflow-notary"
+PROFILE_NAME="macslim-notary"
 
 case "$TARGET" in
   arm)
@@ -31,8 +31,8 @@ echo "==> 签名身份: $SIGNING_ID"
 # 1. Tauri release build (自动用 tauri.conf.json 里配置的签名身份)
 bun run tauri build --target "$RUST_TARGET"
 
-APP_PATH="src-tauri/target/${RUST_TARGET}/release/bundle/macos/MacFlow.app"
-DMG_PATH=$(ls src-tauri/target/${RUST_TARGET}/release/bundle/dmg/MacFlow_*.dmg | head -1)
+APP_PATH="src-tauri/target/${RUST_TARGET}/release/bundle/macos/MacSlim.app"
+DMG_PATH=$(ls src-tauri/target/${RUST_TARGET}/release/bundle/dmg/MacSlim_*.dmg | head -1)
 
 echo "==> 生成的 .app: $APP_PATH"
 echo "==> 生成的 DMG: $DMG_PATH"

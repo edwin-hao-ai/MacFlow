@@ -24,7 +24,7 @@ pub fn init_tray(app: &AppHandle) -> tauri::Result<()> {
     let disk_item = MenuItem::with_id(app, "disk_item", "  磁盘:   —", false, None::<&str>)?;
 
     // 操作区
-    let open_item = MenuItem::with_id(app, "open", "打开 MacFlow", true, None::<&str>)?;
+    let open_item = MenuItem::with_id(app, "open", "打开 MacSlim", true, None::<&str>)?;
     let scan_item = MenuItem::with_id(app, "scan", "立即扫描", true, None::<&str>)?;
     let optimize_item =
         MenuItem::with_id(app, "optimize", "一键优化（安全项）", true, None::<&str>)?;
@@ -33,8 +33,8 @@ pub fn init_tray(app: &AppHandle) -> tauri::Result<()> {
     let sep2 = PredefinedMenuItem::separator(app)?;
 
     let about_item =
-        MenuItem::with_id(app, "about", "关于 MacFlow v0.1.0", false, None::<&str>)?;
-    let quit_item = MenuItem::with_id(app, "quit", "退出 MacFlow", true, None::<&str>)?;
+        MenuItem::with_id(app, "about", "关于 MacSlim v0.1.0", false, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", "退出 MacSlim", true, None::<&str>)?;
 
     let menu = Menu::with_items(
         app,
@@ -67,7 +67,7 @@ pub fn init_tray(app: &AppHandle) -> tauri::Result<()> {
     let _ = TrayIconBuilder::with_id("main-tray")
         .icon(tray_icon)
         .icon_as_template(true)
-        .tooltip("MacFlow")
+        .tooltip("MacSlim")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| {
@@ -161,7 +161,7 @@ pub fn refresh_tray(app: &AppHandle, h: &SystemHealth) {
     if let Some(tray) = app.tray_by_id("main-tray") {
         let _ = tray.set_title(Some(title_text.clone()));
         let tip = format!(
-            "MacFlow\nCPU {:.1}%   内存 {:.1}%   磁盘 {:.1}%",
+            "MacSlim\nCPU {:.1}%   内存 {:.1}%   磁盘 {:.1}%",
             h.cpu_percent, h.memory_percent, h.disk_percent
         );
         let _ = tray.set_tooltip(Some(&tip));

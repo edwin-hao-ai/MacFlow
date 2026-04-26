@@ -10,7 +10,7 @@ set -euo pipefail
 TARGET="${1:-arm}"
 TEAM_ID="5XNDF727Y6"
 SIGNING_ID="Developer ID Application: Beijing VGO Co;Ltd (${TEAM_ID})"
-PROFILE_NAME="macflow-notary"
+PROFILE_NAME="macflow-notary"  # keychain profile 名沿用旧的，避免重新 store-credentials
 ENTITLEMENTS="src-tauri/entitlements.plist"
 
 case "$TARGET" in
@@ -20,8 +20,8 @@ case "$TARGET" in
   *) echo "用法: $0 [arm|intel|universal]"; exit 1 ;;
 esac
 
-APP_PATH="src-tauri/target/${RUST_TARGET}/release/bundle/macos/MacFlow.app"
-DMG_PATH=$(ls src-tauri/target/${RUST_TARGET}/release/bundle/dmg/MacFlow_*.dmg 2>/dev/null | head -1 || true)
+APP_PATH="src-tauri/target/${RUST_TARGET}/release/bundle/macos/MacSlim.app"
+DMG_PATH=$(ls src-tauri/target/${RUST_TARGET}/release/bundle/dmg/MacSlim_*.dmg 2>/dev/null | head -1 || true)
 
 if [ ! -d "$APP_PATH" ]; then
   echo "错误: 找不到 $APP_PATH，请先跑 bun run tauri build --target $RUST_TARGET"
@@ -32,7 +32,7 @@ fi
 TIMESTAMP_FLAG="--timestamp"
 if ! codesign --force --options runtime --timestamp \
      --sign "$SIGNING_ID" \
-     "$APP_PATH/Contents/MacOS/macflow" >/dev/null 2>&1; then
+     "$APP_PATH/Contents/MacOS/macslim" >/dev/null 2>&1; then
   echo "⚠️  timestamp.apple.com 不可用，使用无时间戳签名（无法通过公证，但本地可用）"
   TIMESTAMP_FLAG="--timestamp=none"
 fi
@@ -42,7 +42,7 @@ INFO_PLIST="$APP_PATH/Contents/Info.plist"
 # NSAppleEventsUsageDescription：osascript 'tell application X to quit' 必需
 # Hardened Runtime 下没有这个 key，AppleEvents 调用会被静默拒绝（macOS 14+）
 if ! /usr/libexec/PlistBuddy -c "Print :NSAppleEventsUsageDescription" "$INFO_PLIST" >/dev/null 2>&1; then
-  /usr/libexec/PlistBuddy -c "Add :NSAppleEventsUsageDescription string 'MacFlow 需要发送 AppleEvent 来优雅退出其他应用程序。'" "$INFO_PLIST"
+  /usr/libexec/PlistBuddy -c "Add :NSAppleEventsUsageDescription string 'MacSlim 需要发送 AppleEvent 来优雅退出其他应用程序。'" "$INFO_PLIST"
   echo "    ✓ 已注入 NSAppleEventsUsageDescription"
 else
   echo "    ✓ NSAppleEventsUsageDescription 已存在，跳过"

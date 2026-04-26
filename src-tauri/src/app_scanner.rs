@@ -110,7 +110,7 @@ fn read_icon_name(plist_path: &Path) -> Option<String> {
 fn icns_to_base64_png(icns_path: &Path) -> Option<String> {
     use base64::Engine;
     let tmp = std::env::temp_dir().join(format!(
-        "macflow_icon_{}.png",
+        "macslim_icon_{}.png",
         icns_path.file_stem()?.to_string_lossy()
     ));
     let output = std::process::Command::new("sips")

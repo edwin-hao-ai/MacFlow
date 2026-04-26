@@ -177,5 +177,5 @@ impl Storage {
 
 fn db_path() -> Result<PathBuf, String> {
     let base = dirs::config_dir().ok_or("无法获取配置目录")?;
-    Ok(base.join("MacFlow").join("macflow.db"))
+    Ok(base.join("MacSlim").join("macslim.db"))
 }

@@ -68,7 +68,7 @@ const Sidebar: Component<Props> = (props) => {
           )}
         </For>
       </nav>
-      <div class="mt-auto p-3 text-[10px] text-zinc-400 no-drag">v0.1.1</div>
+      <div class="mt-auto p-3 text-[10px] text-zinc-400 no-drag">v0.2.0</div>
     </aside>
   );
 };

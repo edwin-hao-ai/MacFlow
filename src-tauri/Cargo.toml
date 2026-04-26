@@ -1,22 +1,22 @@
 [package]
-name = "macflow"
-version = "0.1.2"
-description = "MacFlow - Mac developer and user system maintenance tool"
+name = "macslim"
+version = "0.2.0"
+description = "MacSlim - Mac developer and user system maintenance tool"
 authors = ["Edwin Hao"]
 edition = "2021"
 rust-version = "1.80"
-default-run = "macflow"
+default-run = "macslim"
 
 [lib]
-name = "macflow_lib"
+name = "macslim_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [[bin]]
-name = "macflow"
+name = "macslim"
 path = "src/main.rs"
 
 [[bin]]
-name = "macflow-cli"
+name = "macslim-cli"
 path = "src/bin/cli.rs"
 
 [build-dependencies]

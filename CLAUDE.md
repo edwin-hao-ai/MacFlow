@@ -1,4 +1,4 @@
-# MacFlow 项目规则（Claude 必读）
+# MacSlim 项目规则（Claude 必读）
 
 > 本文件是 Claude 在本项目下工作时的最高优先级规则。与 PRD.md 冲突时以本文件为准。
 
@@ -15,7 +15,7 @@
 
 ## 1. 项目定位
 
-MacFlow 是 **Mac 端专属、一键式的开发者 + 普通用户系统运维工具**。核心价值：
+MacSlim 是 **Mac 端专属、一键式的开发者 + 普通用户系统运维工具**。核心价值：
 
 - 比活动监视器简单：一键扫描 + 一键优化
 - 比 CleanMyMac 轻量 + 懂开发者：NPM/Docker/Xcode 缓存深度适配
@@ -79,8 +79,8 @@ APPLE_SIGNING_IDENTITY="Developer ID Application: Beijing VGO Co;Ltd (5XNDF727Y6
 
 # 3. 上传到 GitHub Release
 gh release upload vX.Y.Z \
-  src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/MacFlow_X.Y.Z_aarch64.dmg \
-  --clobber --repo edwin-hao-ai/MacFlow
+  src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/MacSlim_X.Y.Z_aarch64.dmg \
+  --clobber --repo edwin-hao-ai/MacSlim
 ```
 
 ### 凭据安全规则（CRITICAL）
@@ -170,7 +170,7 @@ spctl -a -vvv -t install <下载的.dmg>
 
 ```
 ┌────────────────────────────────────────────────┐
-│  [红黄绿]  MacFlow                          ⚙  │  <- 原生 titlebar
+│  [红黄绿]  MacSlim                          ⚙  │  <- 原生 titlebar
 ├────────┬───────────────────────────────────────┤
 │        │                                       │
 │  智能  │   [ 系统健康状态卡片，大数字+环形图 ] │
@@ -217,7 +217,7 @@ spctl -a -vvv -t install <下载的.dmg>
 
 - 白名单变更
 - 设置项变更
-- 被移动到 `~/.Trash/macflow-YYYYMMDD/` 的元数据（保留 10 分钟后自动清空）
+- 被移动到 `~/.Trash/macslim-YYYYMMDD/` 的元数据（保留 10 分钟后自动清空）
 
 ### 4.3 默认选中的安全边界
 

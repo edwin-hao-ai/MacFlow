@@ -1,8 +1,8 @@
-// 中文（简体）翻译 —— MacFlow 的默认文案源
+// 中文（简体）翻译 —— MacSlim 的默认文案源
 export const zhCN = {
   // 通用
   common: {
-    appName: "MacFlow",
+    appName: "MacSlim",
     tagline: "Mac 一键优化",
     scan: "扫描",
     rescan: "重新扫描",
@@ -34,7 +34,7 @@ export const zhCN = {
 
   // 欢迎页
   welcome: {
-    title: "欢迎使用 MacFlow",
+    title: "欢迎使用 MacSlim",
     subtitle: "Mac 专属的一键式系统运维工具。\n清理冗余进程和开发缓存，让 Mac 保持轻快。",
     featureProcessTitle: "进程优化",
     featureProcessDesc: "识别残留、重复、高占用进程",
@@ -107,7 +107,7 @@ export const zhCN = {
     groupCount: "{count} 项 · {size}",
     noItems: "没有发现可清理的缓存。你的 Mac 很干净！",
     partialFail: "部分项目清理失败",
-    notifyTitle: "MacFlow 清理完成",
+    notifyTitle: "MacSlim 清理完成",
     notifyBody: "已释放 {size}，共清理 {count} 项",
   },
 
@@ -126,7 +126,7 @@ export const zhCN = {
     general: "通用设置",
     generalDesc: "基础行为开关",
     autostart: "开机自动启动",
-    autostartDesc: "macOS 登录时自动启动 MacFlow 并最小化到菜单栏",
+    autostartDesc: "macOS 登录时自动启动 MacSlim 并最小化到菜单栏",
     notifyClean: "清理完成通知",
     notifyCleanDesc: "在 macOS 通知中心提示已释放空间",
     cleanupSound: "清理音效",
@@ -138,7 +138,7 @@ export const zhCN = {
     languageZh: "中文",
     languageEn: "English",
     updates: "检查更新",
-    updatesDesc: "手动检查 MacFlow 是否有新版本",
+    updatesDesc: "手动检查 MacSlim 是否有新版本",
     updatesCheck: "检查",
     updatesChecking: "检查中...",
     updatesLatest: "已是最新版本 ({version})",
@@ -156,11 +156,11 @@ export const zhCN = {
     whitelistNotePH: "备注（可选）",
     whitelistBadgeProcess: "进程",
     whitelistBadgePath: "路径",
-    about: "关于 MacFlow",
+    about: "关于 MacSlim",
     aboutLine1: "版本 0.1.0 · 规则驱动 · 本地存储 · 开源友好",
     aboutLine2: "不上传任何数据，不接任何 LLM，不做广告推送",
-    aboutDb: "数据：~/Library/Application Support/MacFlow/macflow.db",
-    aboutCli: "CLI：~/MacFlow/src-tauri/target/debug/macflow-cli",
+    aboutDb: "数据：~/Library/Application Support/MacSlim/macslim.db",
+    aboutCli: "CLI：~/MacSlim/src-tauri/target/debug/macslim-cli",
   },
 
   // 占位符

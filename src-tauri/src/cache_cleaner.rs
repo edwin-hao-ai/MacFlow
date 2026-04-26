@@ -365,7 +365,7 @@ async fn clean_stale_node_modules(home_str: &str) -> Result<(), String> {
                     .map(|s| s.to_string_lossy().to_string())
                     .unwrap_or_else(|| "unknown".into());
                 let trash = std::env::temp_dir().join(format!(
-                    "macflow-nodemodules-{}-{}-{}",
+                    "macslim-nodemodules-{}-{}-{}",
                     ts,
                     parent_name,
                     cleaned
@@ -465,7 +465,7 @@ async fn remove_directory(path: &Path) -> Result<(), String> {
 
     let timestamp = chrono::Utc::now().format("%Y%m%d-%H%M%S");
     let trash = std::env::temp_dir().join(format!(
-        "macflow-trash-{}-{}",
+        "macslim-trash-{}-{}",
         timestamp,
         path.file_name()
             .map(|s| s.to_string_lossy().to_string())

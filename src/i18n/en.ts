@@ -2,7 +2,7 @@ import type { Dict } from "./zh-CN";
 
 export const en: Dict = {
   common: {
-    appName: "MacFlow",
+    appName: "MacSlim",
     tagline: "One-click Mac optimization",
     scan: "Scan",
     rescan: "Rescan",
@@ -32,7 +32,7 @@ export const en: Dict = {
   },
 
   welcome: {
-    title: "Welcome to MacFlow",
+    title: "Welcome to MacSlim",
     subtitle:
       "A one-click Mac system maintenance tool.\nCleans residual processes and developer caches to keep your Mac snappy.",
     featureProcessTitle: "Process Cleanup",
@@ -102,7 +102,7 @@ export const en: Dict = {
     groupCount: "{count} items · {size}",
     noItems: "No caches to clean. Your Mac is spotless.",
     partialFail: "Some items failed to clean",
-    notifyTitle: "MacFlow cleanup complete",
+    notifyTitle: "MacSlim cleanup complete",
     notifyBody: "Freed {size} across {count} items",
   },
 
@@ -121,7 +121,7 @@ export const en: Dict = {
     generalDesc: "Behavior toggles",
     autostart: "Launch at login",
     autostartDesc:
-      "Start MacFlow at macOS login and minimize to the menu bar",
+      "Start MacSlim at macOS login and minimize to the menu bar",
     notifyClean: "Cleanup notifications",
     notifyCleanDesc: "Show a macOS notification when cleanup completes",
     cleanupSound: "Cleanup sound",
@@ -133,7 +133,7 @@ export const en: Dict = {
     languageZh: "中文",
     languageEn: "English",
     updates: "Check for Updates",
-    updatesDesc: "Manually check whether a newer MacFlow is available",
+    updatesDesc: "Manually check whether a newer MacSlim is available",
     updatesCheck: "Check",
     updatesChecking: "Checking...",
     updatesLatest: "You are on the latest version ({version})",
@@ -153,12 +153,12 @@ export const en: Dict = {
     whitelistNotePH: "Note (optional)",
     whitelistBadgeProcess: "Process",
     whitelistBadgePath: "Path",
-    about: "About MacFlow",
+    about: "About MacSlim",
     aboutLine1:
       "v0.1.0 · rule-driven · local storage · open-source friendly",
     aboutLine2: "No data uploaded · no LLM · no ads",
-    aboutDb: "Data: ~/Library/Application Support/MacFlow/macflow.db",
-    aboutCli: "CLI: ~/MacFlow/src-tauri/target/debug/macflow-cli",
+    aboutDb: "Data: ~/Library/Application Support/MacSlim/macslim.db",
+    aboutCli: "CLI: ~/MacSlim/src-tauri/target/debug/macslim-cli",
   },
 
   placeholder: {

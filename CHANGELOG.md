@@ -7,13 +7,13 @@
 - `@solid-primitives/i18n` 模式，`src/i18n/` 目录统一管理
 - Tauri Updater 插件接入，基于 minisign 签名
 - `scripts/publish-update.sh`：生成 manifest + 签名 DMG
-- Updater 公钥已嵌入 `tauri.conf.json`，私钥在 `~/.tauri/macflow-updater.key`（不入库）
+- Updater 公钥已嵌入 `tauri.conf.json`，私钥在 `~/.tauri/macslim-updater.key`（不入库）
 - 设置页新增「检查更新」按钮，支持进度显示 + 自动重启
 
 ### 核心能力
 - 首版桌面应用：Tauri v2 + SolidJS 1.9 + Tailwind CSS v4
 - Rust 核心：sysinfo 进程监控 + nix 信号 + rusqlite 持久化
-- CLI 二进制：`macflow-cli --scan` / `--cache` / `--help`
+- CLI 二进制：`macslim-cli --scan` / `--cache` / `--help`
 
 ### 进程管理
 - 规则引擎识别：软件关闭残留、重复冗余、长期闲置、高占用、开发残留

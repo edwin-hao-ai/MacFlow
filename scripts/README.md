@@ -18,13 +18,13 @@ vim src-tauri/Cargo.toml src-tauri/tauri.conf.json package.json
 # 3. Updater 签名 + 生成 manifest
 ./scripts/publish-update.sh 0.2.0 "本次更新：XXXX"
 
-# 4. 部署 landing/ 到 macflow.app（或任何静态 host）
-rsync -avz landing/ user@macflow.app:/var/www/macflow.app/
+# 4. 部署 landing/ 到 macslim.app（或任何静态 host）
+rsync -avz landing/ user@macslim.app:/var/www/macslim.app/
 ```
 
 ## 密钥管理
 
-Updater 签名密钥：`~/.tauri/macflow-updater.key`（.pub 是公钥，可提交到源码；私钥**绝不提交**）。
+Updater 签名密钥：`~/.tauri/macslim-updater.key`（.pub 是公钥，可提交到源码；私钥**绝不提交**）。
 
 公钥已经嵌入 `src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey`。更换公钥需要重新发布所有平台的初始安装包，老用户才能验证新签名。
 
@@ -34,7 +34,7 @@ Developer ID Application: **Beijing VGO Co;Ltd (Team 5XNDF727Y6)**，已在 Keyc
 首次公证：
 
 ```bash
-xcrun notarytool store-credentials macflow-notary \
+xcrun notarytool store-credentials macslim-notary \
   --apple-id YOUR_APPLE_ID@example.com \
   --team-id 5XNDF727Y6 \
   --password APP_SPECIFIC_PASSWORD   # 从 appleid.apple.com 生成

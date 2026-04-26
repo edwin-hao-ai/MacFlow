@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# MacFlow 更新发布脚本
+# MacSlim 更新发布脚本
 #
 # 用法:
 #   ./scripts/publish-update.sh <version> "<release notes>"
@@ -14,10 +14,10 @@
 #
 # 输出:
 #   - landing/updates/darwin-aarch64/<version>.json  更新清单（服务端用）
-#   - landing/downloads/MacFlow_<version>_aarch64.dmg  最新 DMG
+#   - landing/downloads/MacSlim_<version>_aarch64.dmg  最新 DMG
 #
 # 部署:
-#   把 landing/ 整目录推到 https://macflow.app 即可，用户客户端自动检测新版本。
+#   把 landing/ 整目录推到 https://macslim.app 即可，用户客户端自动检测新版本。
 
 set -euo pipefail
 
@@ -30,19 +30,19 @@ if [ -z "$VERSION" ]; then
 fi
 
 if [ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ] && [ -z "${TAURI_SIGNING_PRIVATE_KEY_PATH:-}" ]; then
-  # 默认从 ~/.tauri/macflow-updater.key 读
-  if [ -f "$HOME/.tauri/macflow-updater.key" ]; then
-    export TAURI_SIGNING_PRIVATE_KEY_PATH="$HOME/.tauri/macflow-updater.key"
-    export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-macflow-dev-pw}"
+  # 默认从 ~/.tauri/macslim-updater.key 读
+  if [ -f "$HOME/.tauri/macslim-updater.key" ]; then
+    export TAURI_SIGNING_PRIVATE_KEY_PATH="$HOME/.tauri/macslim-updater.key"
+    export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="${TAURI_SIGNING_PRIVATE_KEY_PASSWORD:-macslim-dev-pw}"
     echo "==> 使用默认密钥 $TAURI_SIGNING_PRIVATE_KEY_PATH"
   else
     echo "错误: 未找到 updater 私钥" >&2
-    echo "请先运行: bun tauri signer generate -w ~/.tauri/macflow-updater.key --force --ci --password 你的密码" >&2
+    echo "请先运行: bun tauri signer generate -w ~/.tauri/macslim-updater.key --force --ci --password 你的密码" >&2
     exit 1
   fi
 fi
 
-DMG_SRC="src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/MacFlow_${VERSION}_aarch64.dmg"
+DMG_SRC="src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/MacSlim_${VERSION}_aarch64.dmg"
 if [ ! -f "$DMG_SRC" ]; then
   echo "错误: 找不到 $DMG_SRC" >&2
   echo "请先执行: ./scripts/release.sh arm" >&2
@@ -62,7 +62,7 @@ fi
 SIGNATURE=$(cat "$SIG_FILE")
 PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# 目标 URL 在 tauri.conf.json 里配置为 https://macflow.app/updates/{{target}}-{{arch}}/{{current_version}}.json
+# 目标 URL 在 tauri.conf.json 里配置为 https://macslim.app/updates/{{target}}-{{arch}}/{{current_version}}.json
 # 但 Tauri 2 的 target 参数实际是 darwin-aarch64 / darwin-x86_64 / windows-x86_64 / linux-x86_64
 # 我们把 manifest 发布到 darwin-aarch64/<prev-version>.json （服务端静态文件）
 # 而 DMG 本身放到 downloads/
@@ -91,7 +91,7 @@ cat > "${MANIFEST_DIR}/latest.json" <<EOF
   "platforms": {
     "darwin-aarch64": {
       "signature": "${SIGNATURE}",
-      "url": "https://macflow.app/downloads/${DMG_BASENAME}"
+      "url": "https://macslim.app/downloads/${DMG_BASENAME}"
     }
   }
 }
@@ -108,7 +108,7 @@ data = {
   "platforms": {
     "darwin-aarch64": {
       "signature": """${SIGNATURE}""",
-      "url": "https://macflow.app/downloads/${DMG_BASENAME}"
+      "url": "https://macslim.app/downloads/${DMG_BASENAME}"
     }
   }
 }
@@ -127,5 +127,5 @@ echo "   DMG:       landing/downloads/${DMG_BASENAME}"
 echo "   Manifest:  ${MANIFEST_DIR}/latest.json"
 echo "   Signature: $(wc -c < "$SIG_FILE") bytes"
 echo ""
-echo "下一步：把 landing/ 整个目录部署到 https://macflow.app"
-echo "已安装 MacFlow 的用户在「设置」→「检查更新」会看到新版本"
+echo "下一步：把 landing/ 整个目录部署到 https://macslim.app"
+echo "已安装 MacSlim 的用户在「设置」→「检查更新」会看到新版本"

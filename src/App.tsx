@@ -44,7 +44,7 @@ const App: Component = () => {
             {t(`nav.${view()}`)}
           </h1>
         </div>
-        <div class="flex-1 min-h-0 overflow-hidden no-drag">
+        <div class="flex-1 min-h-0 overflow-hidden" onMouseDown={handleWindowDrag}>
           <TabPanel id="scan" active={view()}><ScanView /></TabPanel>
           <TabPanel id="process" active={view()}><ProcessView /></TabPanel>
           <TabPanel id="applications" active={view()}><ApplicationsView /></TabPanel>

@@ -31,7 +31,7 @@ impl KillOutcome {
             KillOutcome::Success => "已终止".into(),
             KillOutcome::AlreadyGone => "进程已不存在".into(),
             KillOutcome::PermissionDenied => {
-                "权限不足（通常是 root 或系统进程，MacFlow 不应该看到这类进程）".into()
+                "权限不足（通常是 root 或系统进程，MacSlim 不应该看到这类进程）".into()
             }
             KillOutcome::RespawnedAs { new_pid, name } => format!(
                 "原进程已终止，但一个 supervisor 立刻以新 PID {} 重启了 `{}`。\

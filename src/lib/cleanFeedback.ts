@@ -8,7 +8,7 @@ type ToneStep = {
 /** 从 localStorage 读取音效开关，默认开启 */
 function isSoundEnabled(): boolean {
   try {
-    const raw = localStorage.getItem("macflow.prefs.v1");
+    const raw = localStorage.getItem("macslim.prefs.v1");
     if (!raw) return true;
     const p = JSON.parse(raw);
     return p?.cleanupSoundEnabled !== false;

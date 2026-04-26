@@ -54,9 +54,9 @@ pub const SYSTEM_CORE_NAMES: &[&str] = &[
     "iTerm2",
     "Claude",
     "ClaudeCode",
-    // Tauri / MacFlow 自身
-    "macflow",
-    "MacFlow",
+    // Tauri / MacSlim 自身
+    "macslim",
+    "MacSlim",
 ];
 
 /// 用户自定义白名单（从 SQLite 读）—— 现在 stub 返回空，后续接入持久化。

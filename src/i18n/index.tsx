@@ -15,7 +15,7 @@ const DICTS: Record<"zh-CN" | "en", Dict> = {
   en,
 };
 
-const STORAGE_KEY = "macflow.locale.v1";
+const STORAGE_KEY = "macslim.locale.v1";
 
 /** 从系统语言推测默认语言。非中文一律 fallback 到英文。 */
 function detectSystemLocale(): "zh-CN" | "en" {

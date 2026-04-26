@@ -1,6 +1,6 @@
 # 贡献指南
 
-欢迎给 MacFlow 提 PR。在动手之前，请先读完本文，避免做了一半发现方向不符。
+欢迎给 MacSlim 提 PR。在动手之前，请先读完本文，避免做了一半发现方向不符。
 
 ## 设计原则（不可妥协）
 
@@ -54,13 +54,13 @@
 
 ```bash
 # 1. fork 然后 clone
-git clone https://github.com/YOUR_FORK/macflow.git
+git clone https://github.com/YOUR_FORK/macslim.git
 
 # 2. 建分支
 git checkout -b feat/your-feature
 
 # 3. 安装
-cd macflow && bun install
+cd macslim && bun install
 
 # 4. 开发
 bun run tauri dev
@@ -129,4 +129,4 @@ PR 必须通过：
 - Discussions 讨论设计方向
 - 中英文都可，但请在每个 issue 标题前加 `[CN]` / `[EN]` 方便检索
 
-感谢你想给 MacFlow 出一份力。
+感谢你想给 MacSlim 出一份力。
