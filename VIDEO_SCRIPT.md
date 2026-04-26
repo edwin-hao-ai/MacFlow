@@ -177,13 +177,13 @@
 
 ## CTA 下载（约 20 秒）
 
-`[镜头：MacSlim 主界面 + 一行下载链接 macslim.app]`
+`[镜头：MacSlim 主界面 + 一行下载链接 github.com/edwin-hao-ai/MacSlim]`
 
 > 完全免费，**开源**，已经 Apple 公证签名——**双击就能用**，不用绕 Gatekeeper。
 
 > macOS 13 以上，Apple Silicon。
 
-> GitHub 搜 **MacSlim**，或者直接去 macslim.app。
+> GitHub 搜 **MacSlim**，或者直接去 edwin-hao-ai.github.io/MacSlim。
 
 `[最后一帧停留 2 秒]`
 

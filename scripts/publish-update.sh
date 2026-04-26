@@ -17,7 +17,7 @@
 #   - landing/downloads/MacSlim_<version>_aarch64.dmg  最新 DMG
 #
 # 部署:
-#   把 landing/ 整目录推到 https://macslim.app 即可，用户客户端自动检测新版本。
+#   把 landing/ 整目录推到 https://edwin-hao-ai.github.io/MacSlim 即可，用户客户端自动检测新版本。
 
 set -euo pipefail
 
@@ -62,7 +62,7 @@ fi
 SIGNATURE=$(cat "$SIG_FILE")
 PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# 目标 URL 在 tauri.conf.json 里配置为 https://macslim.app/updates/{{target}}-{{arch}}/{{current_version}}.json
+# 目标 URL 在 tauri.conf.json 里配置为 https://edwin-hao-ai.github.io/MacSlim/updates/{{target}}-{{arch}}/{{current_version}}.json
 # 但 Tauri 2 的 target 参数实际是 darwin-aarch64 / darwin-x86_64 / windows-x86_64 / linux-x86_64
 # 我们把 manifest 发布到 darwin-aarch64/<prev-version>.json （服务端静态文件）
 # 而 DMG 本身放到 downloads/
@@ -91,7 +91,7 @@ cat > "${MANIFEST_DIR}/latest.json" <<EOF
   "platforms": {
     "darwin-aarch64": {
       "signature": "${SIGNATURE}",
-      "url": "https://macslim.app/downloads/${DMG_BASENAME}"
+      "url": "https://github.com/edwin-hao-ai/MacSlim/releases/latest/download/${DMG_BASENAME}"
     }
   }
 }
@@ -108,7 +108,7 @@ data = {
   "platforms": {
     "darwin-aarch64": {
       "signature": """${SIGNATURE}""",
-      "url": "https://macslim.app/downloads/${DMG_BASENAME}"
+      "url": "https://github.com/edwin-hao-ai/MacSlim/releases/latest/download/${DMG_BASENAME}"
     }
   }
 }
@@ -127,5 +127,5 @@ echo "   DMG:       landing/downloads/${DMG_BASENAME}"
 echo "   Manifest:  ${MANIFEST_DIR}/latest.json"
 echo "   Signature: $(wc -c < "$SIG_FILE") bytes"
 echo ""
-echo "下一步：把 landing/ 整个目录部署到 https://macslim.app"
+echo "下一步：把 landing/ 整个目录部署到 https://edwin-hao-ai.github.io/MacSlim"
 echo "已安装 MacSlim 的用户在「设置」→「检查更新」会看到新版本"

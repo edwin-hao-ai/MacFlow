@@ -18,8 +18,8 @@ vim src-tauri/Cargo.toml src-tauri/tauri.conf.json package.json
 # 3. Updater 签名 + 生成 manifest
 ./scripts/publish-update.sh 0.2.0 "本次更新：XXXX"
 
-# 4. 部署 landing/ 到 macslim.app（或任何静态 host）
-rsync -avz landing/ user@macslim.app:/var/www/macslim.app/
+# 4. 部署 landing/ 到 GitHub Pages（docs/ 目录推到 main 分支即可）
+rsync -avz landing/ <git push docs/ to GitHub Pages>
 ```
 
 ## 密钥管理

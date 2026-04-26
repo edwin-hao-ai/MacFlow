@@ -2254,8 +2254,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "macflow"
-version = "0.1.2"
+name = "macslim"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "chrono",
