@@ -124,9 +124,10 @@ export async function quitApplication(name: string): Promise<void> {
 }
 
 export async function forceQuitApplication(
+  name: string,
   pids: number[],
 ): Promise<[number, string][]> {
-  return invoke("force_quit_application", { pids });
+  return invoke("force_quit_application", { name, pids });
 }
 
 // ========== Docker 深度视图 ==========

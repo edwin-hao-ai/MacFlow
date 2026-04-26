@@ -106,13 +106,37 @@ async fn list_applications(
 }
 
 #[tauri::command]
-async fn quit_application(name: String) -> Result<(), String> {
-    applications::graceful_quit_app(&name).await
+async fn quit_application(state: State<'_, AppState>, name: String) -> Result<(), String> {
+    let result = applications::graceful_quit_app(&name).await;
+    // 记录历史：成功 / 失败都写一条
+    let _ = state.storage.log_history(
+        "app_quit",
+        &name,
+        0,
+        result.is_ok(),
+        &result.as_ref().err().cloned().unwrap_or_else(|| "已发送退出信号".into()),
+    );
+    result
 }
 
 #[tauri::command]
-async fn force_quit_application(pids: Vec<u32>) -> Result<Vec<(u32, String)>, String> {
+async fn force_quit_application(
+    state: State<'_, AppState>,
+    name: String,
+    pids: Vec<u32>,
+) -> Result<Vec<(u32, String)>, String> {
     let results = applications::force_quit_app(&pids);
+    let killed_count = results.iter().filter(|(_, o)| o.is_ok()).count();
+    let total = results.len();
+    let success = killed_count == total;
+    let detail = format!("终止 {}/{} 个进程", killed_count, total);
+    let _ = state.storage.log_history(
+        "app_force_quit",
+        &name,
+        0,
+        success,
+        &detail,
+    );
     Ok(results
         .into_iter()
         .map(|(pid, outcome)| (pid, outcome.message()))

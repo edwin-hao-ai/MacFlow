@@ -119,6 +119,8 @@ export const zhCN = {
     opProcessKill: "进程清理",
     opCacheClean: "缓存清理",
     opAppUninstall: "应用卸载",
+    opAppQuit: "应用退出",
+    opAppForceQuit: "强制退出",
   },
 
   // 设置

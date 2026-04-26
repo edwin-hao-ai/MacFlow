@@ -110,7 +110,7 @@ const ApplicationsView: Component = () => {
     setBusy(app.bundle_path);
     setMessage(null);
     try {
-      const results = await forceQuitApplication(app.all_pids);
+      const results = await forceQuitApplication(app.name, app.all_pids);
       const failed = results.filter(
         ([, m]) => !m.includes("已终止") && !m.includes("已不存在"),
       );

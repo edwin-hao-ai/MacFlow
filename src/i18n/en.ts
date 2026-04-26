@@ -114,6 +114,8 @@ export const en: Dict = {
     opProcessKill: "Process cleanup",
     opCacheClean: "Cache cleanup",
     opAppUninstall: "App uninstall",
+    opAppQuit: "App quit",
+    opAppForceQuit: "Force quit",
   },
 
   settings: {

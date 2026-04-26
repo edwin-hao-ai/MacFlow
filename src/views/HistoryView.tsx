@@ -1,7 +1,7 @@
 import { Component, createSignal, For, onMount, Show } from "solid-js";
 import { getHistory, type HistoryEntry } from "@/lib/tauri";
 import { fmtBytes, fmtRelativeTime } from "@/lib/format";
-import { CheckCircle2, XCircle, Cpu, HardDrive, Loader2, Trash2 } from "lucide-solid";
+import { CheckCircle2, XCircle, Cpu, HardDrive, Loader2, Trash2, PowerOff, Zap } from "lucide-solid";
 import { useI18n } from "@/i18n";
 
 const HistoryView: Component = () => {
@@ -21,14 +21,22 @@ const HistoryView: Component = () => {
 
   onMount(load);
 
-  const opLabel = (op: string) =>
-    op === "process_kill"
-      ? t("history.opProcessKill")
-      : op === "cache_clean"
-        ? t("history.opCacheClean")
-        : op === "app_uninstall"
-          ? t("history.opAppUninstall")
-          : op;
+  const opLabel = (op: string) => {
+    switch (op) {
+      case "process_kill":
+        return t("history.opProcessKill");
+      case "cache_clean":
+        return t("history.opCacheClean");
+      case "app_uninstall":
+        return t("history.opAppUninstall");
+      case "app_quit":
+        return t("history.opAppQuit");
+      case "app_force_quit":
+        return t("history.opAppForceQuit");
+      default:
+        return op;
+    }
+  };
 
   return (
     <div class="h-full overflow-y-auto">
@@ -75,13 +83,21 @@ const HistoryView: Component = () => {
                               ? "bg-brand-500/10"
                               : e.operation === "app_uninstall"
                                 ? "bg-warning-500/10"
-                                : "bg-success-500/10"
+                                : e.operation === "app_force_quit"
+                                  ? "bg-danger-500/10"
+                                  : e.operation === "app_quit"
+                                    ? "bg-zinc-500/10"
+                                    : "bg-success-500/10"
                           }`}
                         >
                           {e.operation === "process_kill" ? (
                             <Cpu size={16} class="text-brand-600" />
                           ) : e.operation === "app_uninstall" ? (
                             <Trash2 size={16} class="text-warning-600" />
+                          ) : e.operation === "app_force_quit" ? (
+                            <Zap size={16} class="text-danger-600" />
+                          ) : e.operation === "app_quit" ? (
+                            <PowerOff size={16} class="text-zinc-600" />
                           ) : (
                             <HardDrive size={16} class="text-success-600" />
                           )}
