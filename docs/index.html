@@ -499,6 +499,10 @@
               <div data-code cmd="macslim-cli --cache" data-i18n-desc="cliCache"></div>
               <div data-code cmd="macslim-cli --help" data-i18n-desc="cliHelp"></div>
             </div>
+            <div class="mt-6 p-4 rounded-xl bg-zinc-900/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+              <p class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-2" data-i18n="cliInstallHint">First-time setup: symlink the bundled binary into your PATH</p>
+              <code class="block text-[11px] font-mono text-zinc-600 dark:text-zinc-400 break-all">sudo ln -s /Applications/MacSlim.app/Contents/MacOS/macslim-cli /usr/local/bin/macslim-cli</code>
+            </div>
           </div>
         </div>
       </section>
@@ -630,6 +634,7 @@
         compFree: "免费", compBuiltIn: "系统内置",
         cliBadge: "面向开发者", cliTitle: "不用打开窗口也能用", cliDesc: "macslim-cli 是一个独立的命令行工具，和桌面端共享同一套 Rust 核心。可以在 CI、定时任务或终端里直接使用。",
         cliScan: "扫描，不执行清理", cliCache: "扫描并清理所有安全项", cliHelp: "完整帮助",
+        cliInstallHint: "首次使用：把 .app 内自带的二进制软链到 PATH",
         ctaTitle: "释放你的 Mac，就是现在", ctaSubtitle: "免费 · 无广告 · 无账号 · 无订阅", ctaBtn: "下载 macOS 版 — 免费", intelLink: "Intel 版本",
         faqs: [
           { q: "会不会误删我正在用的项目缓存？", a: "不会。MacSlim 在扫描前会检测 npm / pnpm / yarn / docker build / xcodebuild / cargo build / go / pip 是否正在运行。只要检测到有一个在跑，对应的缓存完全不会出现在清理列表里。" },
@@ -659,6 +664,7 @@
         compFree: "Free", compBuiltIn: "Built-in",
         cliBadge: "For developers", cliTitle: "Works without opening a window", cliDesc: "macslim-cli is a standalone binary that shares the same Rust core as the desktop app. Run it in CI, cron jobs, or just when you prefer the terminal.",
         cliScan: "Scan only, no changes", cliCache: "Scan and clean all safe items", cliHelp: "Full help",
+        cliInstallHint: "First-time setup: symlink the bundled binary into your PATH",
         ctaTitle: "Free your Mac. Right now.", ctaSubtitle: "Free · No ads · No account · No subscription", ctaBtn: "Download for macOS — Free", intelLink: "Intel version",
         faqs: [
           { q: "Will it accidentally delete files I need?", a: "No. MacSlim checks whether npm, pnpm, yarn, docker build, xcodebuild, cargo, go, or pip is running before scanning. If any of them are active, their caches won't appear in the list at all." },

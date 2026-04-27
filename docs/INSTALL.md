@@ -1,6 +1,6 @@
 # 从源码构建 MacSlim
 
-本文档针对想自己编译 MacSlim 或为项目贡献代码的用户。如果只想用，请直接下载 [Releases](https://github.com/edwinhao/macslim/releases)。
+本文档针对想自己编译 MacSlim 或为项目贡献代码的用户。如果只想用，请直接下载 [Releases](https://github.com/edwin-hao-ai/MacSlim/releases)。
 
 ## 前置环境
 
@@ -18,7 +18,7 @@
 ## 获取源码
 
 ```bash
-git clone https://github.com/edwinhao/macslim.git
+git clone https://github.com/edwin-hao-ai/MacSlim.git
 cd macslim
 bun install
 ```
@@ -52,9 +52,37 @@ bun run bundle:universal
 
 ```
 src-tauri/target/{arch}/release/bundle/
-├── macos/MacSlim.app   # .app 包
-└── dmg/MacSlim_0.1.0_*.dmg   # DMG 分发包
+├── macos/MacSlim.app                    # .app 包（含 macslim 主程序 + macslim-cli）
+└── dmg/MacSlim_<version>_*.dmg          # DMG 分发包
 ```
+
+## 使用 CLI
+
+桌面 App 内已内置 `macslim-cli` 二进制。装完 DMG 后，CLI 在：
+
+```
+/Applications/MacSlim.app/Contents/MacOS/macslim-cli
+```
+
+为了在终端任意位置调用，建议软链到 PATH：
+
+```bash
+sudo ln -s /Applications/MacSlim.app/Contents/MacOS/macslim-cli /usr/local/bin/macslim-cli
+```
+
+常用命令：
+
+```bash
+macslim-cli              # 启动桌面 App
+macslim-cli --scan       # 扫描全部缓存（不清理）
+macslim-cli --cache      # 清理缓存（带交互确认）
+macslim-cli --history    # 查看本地历史
+macslim-cli --help       # 全部命令
+```
+
+CLI 与桌面 App 共享同一个 Rust core 和 SQLite 数据库（`~/Library/Application Support/MacSlim/macslim.db`），扫描规则、白名单、安全检查、历史记录全部互通——你在 CLI 里清的东西，桌面 App 的「历史记录」标签里也能看到。
+
+> **解除软链**：`sudo rm /usr/local/bin/macslim-cli`
 
 ## 签名 + 公证（可选）
 
