@@ -1,5 +1,15 @@
 # 变更日志
 
+## v0.2.2 · 2026-04-30
+
+### 修复
+- **应用卸载权限**：卸载 `/Applications/` 下的应用时，遇到「Permission denied (os error 13)」不再直接失败。现在通过 `do shell script with administrator privileges` 弹出系统授权框，一次输入密码即可批量将多个应用与残留文件移至 `~/.Trash/`。
+- 用户取消授权时给出友好中文提示「用户取消授权」，不再透出 osascript 原始错误码。
+
+### 实现细节
+- `try_trash_user` / `trash_via_admin_batch` 双层流程：先用户权限尝试 NSFileManager + rename，权限不足的路径汇集后**单次**批量授权处理，避免每个文件弹一次密码框。
+- shell + AppleScript 双层转义：`shell_single_quote` 处理单引号，`applescript_quote` 处理 `\` 和 `"`。
+
 ## v0.1.0 · 2026-04-21 (里程碑 1-4 合并)
 
 ### 国际化 · Auto-update（本轮新增）

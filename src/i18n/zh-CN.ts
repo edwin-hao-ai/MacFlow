@@ -159,7 +159,7 @@ export const zhCN = {
     whitelistBadgeProcess: "进程",
     whitelistBadgePath: "路径",
     about: "关于 MacSlim",
-    aboutLine1: "版本 0.1.0 · 规则驱动 · 本地存储 · 开源友好",
+    aboutLine1: "版本 0.2.2 · 规则驱动 · 本地存储 · 开源友好",
     aboutLine2: "不上传任何数据，不接任何 LLM，不做广告推送",
     aboutDb: "数据：~/Library/Application Support/MacSlim/macslim.db",
     aboutCli: "CLI：~/MacSlim/src-tauri/target/debug/macslim-cli",

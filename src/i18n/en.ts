@@ -157,7 +157,7 @@ export const en: Dict = {
     whitelistBadgePath: "Path",
     about: "About MacSlim",
     aboutLine1:
-      "v0.1.0 · rule-driven · local storage · open-source friendly",
+      "v0.2.2 · rule-driven · local storage · open-source friendly",
     aboutLine2: "No data uploaded · no LLM · no ads",
     aboutDb: "Data: ~/Library/Application Support/MacSlim/macslim.db",
     aboutCli: "CLI: ~/MacSlim/src-tauri/target/debug/macslim-cli",

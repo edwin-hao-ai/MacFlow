@@ -94,19 +94,6 @@ pub const MULTIPROCESS_FAMILIES: &[&str] = &[
     "Spotify Helper",
     "Music",
     "Apple TV",
-    // 开发语言运行时（可能被用户正在跑）
-    "node",
-    "python",
-    "python3",
-    "ruby",
-    "java",
-    "php",
-    "perl",
-    "bun",
-    "deno",
-    "rustc",
-    "go",
-    "dotnet",
 ];
 
 /// 判断进程是否属于多进程族（Helper / 子进程架构）。
